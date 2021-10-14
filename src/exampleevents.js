@@ -12,7 +12,6 @@ function bot_login_debug(client_obj) {
       1.  client_obj.on('ready') listens for the 'ready' event from the discord client
           'ready' is when the bot logs onto the server
         
-
       2.  () =>{} syntax is the function callback, it calls a function when an event is triggered
           In this case, it will log the discord bot's name into the console.
   */
