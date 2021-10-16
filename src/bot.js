@@ -4,7 +4,8 @@
     examplelib:   a local library containing some example discordapi functions
 */
 require('dotenv').config();
-const examplelib = require("./exampleevents.js")
+const examplelib = require("./exampleevents.js");
+const corelib = require("./core.js");
 
 /*
   Code to login the bot onto the servers.
@@ -18,6 +19,10 @@ const client_obj = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GU
 //Example function calls
 examplelib.bot_login_debug(client_obj);
 examplelib.bot_message_debug(client_obj);
+
+//Testing a command_scan function
+corelib.command_scan(client_obj,'!');
+
 
 //This code logs in our bot.
 client_obj.login(process.env.DISCORDJS_BOT_TOKEN);
