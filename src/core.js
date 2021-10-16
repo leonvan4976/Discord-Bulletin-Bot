@@ -2,6 +2,7 @@
     core.js holds the major functions required needed for the core functionality of the bot.
 */
 
+//Leonard has been here
 //A generic function used to scan the contents of a message for commands
 function command_scan(client_obj, delimiter_open, delimiter_close) {
 
