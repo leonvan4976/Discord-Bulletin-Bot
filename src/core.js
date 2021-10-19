@@ -27,6 +27,8 @@ function command_scan(client_obj, delimiter_open, delimiter_close) {
             let author = message.author;
             //Code to send a response to the user who used a command
             author.send("The commands you have sent to the bot is: " + command_list.toString());
+            //Code to react to the user who used a command
+            message.react('👌');
             return { 'author' : author , 'command_list' : command_list};
         }
     });
