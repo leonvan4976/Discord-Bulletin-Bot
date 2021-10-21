@@ -2,6 +2,7 @@
     core.js holds the major functions required needed for the core functionality of the bot.
 */
 
+
 // Imports classes from Discord.js
 const { MessageActionRow, MessageSelectMenu, MessageEmbed } = require('discord.js');
 
