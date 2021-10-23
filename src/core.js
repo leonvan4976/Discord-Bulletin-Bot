@@ -44,30 +44,61 @@ function command_scan(client_obj, delimiter_open, delimiter_close) {
             .setTimestamp();
 
             
+            //TODO: will import a list of tagas from database
+            //just a demo tags list for now
+            let demoTagsArr = ['cse101','cse130','cse140'];
+            //tagsTOJSON() returns a list of options objects, we can just .addOptions(tagsToJSON())later
+            function tagsToJSON() {
+                let optionsJSONArray = []
+                demoTagsArr.map((eachTag)=> {
+                    optionsJSONArray.push({label: eachTag,value: eachTag})
+                })
+                return optionsJSONArray;
+            }
+
+            function createDropDown(placeholder,tagsJSON){
+                return new MessageActionRow().addComponents(
+                    new MessageSelectMenu()
+                        .setCustomId('select')
+                        .setPlaceholder(placeholder)
+                        .addOptions(tagsJSON)
+                )
+            }
             //Create a tag option select menu
-            const Row1 = new MessageActionRow()
-            .addComponents(
-				new MessageSelectMenu()
-					.setCustomId('select')
-					.setPlaceholder('Nothing selected')
-					.addOptions([
-                    {
-                        label: 'Art',
-                        emoji: '🎨',
-                        value: 'first_option',
-                    },
-                    {
-                        label: 'CS',
-                        emoji: '💻',
-                        value: 'second_option',
-                    },
-                ]),
-			);
+            // const Row1 = new MessageActionRow()
+            //     .addComponents(
+			// 	new MessageSelectMenu()
+			// 		.setCustomId('select')
+			// 		.setPlaceholder('Nothing selected')
+            //         .addOptions(tagsToJSON())
+				// 	.addOptions([
+                //     {
+                //         label: 'Art',
+                //         emoji: '🎨',
+                //         value: 'first_option',
+                //     },
+                //     {
+                //         label: 'CS',
+                //         emoji: '💻',
+                //         value: 'second_option',
+                //     },
+                // ]),
+			// );
 
             //Have the bot send a channel message with the user profile and select menu
-            await message.channel.send({embeds: [tagEmbed], components: [Row1]})
-            .then(() => console.log(`Replied to message "${message.content}"`))
-            .catch(console.error);
+            await message.channel.send({embeds: [tagEmbed], components: [createDropDown('Please select a tag',tagsToJSON())]})
+                .then(() => console.log(`Replied to message "${message.content}"`))
+                .catch(console.error);
+            client_obj.on('interactionCreate', interaction => {
+                if (!interaction.isSelectMenu()) return;
+                console.log(interaction);
+                if (interaction.customId === 'select') {
+                    interaction.deferUpdate();
+                    message.channel.send('you selected '+interaction.values);
+                }
+            })
+            // console.log(interaction)
+            // message.channel.send(interaction.values);
 
             return { 'author' : author , 'command_list' : command_list};
         }
