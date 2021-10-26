@@ -39,7 +39,7 @@ function command_scan(client_obj, delimiter_open, delimiter_close) {
             const tagEmbed = new MessageEmbed()
             .setColor('#0099ff') 
             .setTitle('Tags')
-            .setAuthor(author.username + "'s User Profile")
+            .setAuthor(author.username + "'s User Profile", author.avatarURL())
             .setDescription('Some description here')
             .setTimestamp();
 
@@ -51,39 +51,22 @@ function command_scan(client_obj, delimiter_open, delimiter_close) {
             function tagsToJSON() {
                 let optionsJSONArray = []
                 demoTagsArr.map((eachTag)=> {
-                    optionsJSONArray.push({label: eachTag,value: eachTag})
+                    optionsJSONArray.push({label: eachTag, value: eachTag})
                 })
                 return optionsJSONArray;
             }
 
+            //Create a tag dropdown menu
             function createDropDown(placeholder,tagsJSON){
                 return new MessageActionRow().addComponents(
                     new MessageSelectMenu()
                         .setCustomId('select')
                         .setPlaceholder(placeholder)
+                        .setMinValues(1)
+                        .setMaxValues(demoTagsArr.length)
                         .addOptions(tagsJSON)
                 )
             }
-            //Create a tag option select menu
-            // const Row1 = new MessageActionRow()
-            //     .addComponents(
-			// 	new MessageSelectMenu()
-			// 		.setCustomId('select')
-			// 		.setPlaceholder('Nothing selected')
-            //         .addOptions(tagsToJSON())
-				// 	.addOptions([
-                //     {
-                //         label: 'Art',
-                //         emoji: '🎨',
-                //         value: 'first_option',
-                //     },
-                //     {
-                //         label: 'CS',
-                //         emoji: '💻',
-                //         value: 'second_option',
-                //     },
-                // ]),
-			// );
 
             //Have the bot send a channel message with the user profile and select menu
             await message.channel.send({embeds: [tagEmbed], components: [createDropDown('Please select a tag',tagsToJSON())]})
@@ -94,7 +77,7 @@ function command_scan(client_obj, delimiter_open, delimiter_close) {
                 console.log(interaction);
                 if (interaction.customId === 'select') {
                     interaction.deferUpdate();
-                    message.channel.send('you selected '+interaction.values);
+                    message.reply('you selected '+interaction.values);
                 }
             })
             // console.log(interaction)
