@@ -8,7 +8,7 @@ const examplelib = require("./exampleevents.js");
 const corelib = require("./core.js");
 const { Sequelize } = require('sequelize');
 
-/* connect to database */
+/* // connect to database */
 const sequelize = new Sequelize('test_db', 'root', 'root', {
   host: 'localhost',
   dialect: 'mysql'
