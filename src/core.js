@@ -30,8 +30,7 @@ function command_scan(client_obj, delimiter_open, delimiter_close) {
         }else{
             //author is the identification of the discord user who sent the message
             let author = message.author;
-            //Code to send a response to the user who used a command
-            author.send("The commands you have sent to the bot is: " + command_list.toString());
+
             //Code to react to the user who used a command
             message.react('👌');
 
@@ -72,12 +71,23 @@ function command_scan(client_obj, delimiter_open, delimiter_close) {
             await message.channel.send({embeds: [tagEmbed], components: [createDropDown('Please select a tag',tagsToJSON())]})
                 .then(() => console.log(`Replied to message "${message.content}"`))
                 .catch(console.error);
-            client_obj.on('interactionCreate', interaction => {
+
+            client_obj.on('interactionCreate', async interaction => {
                 if (!interaction.isSelectMenu()) return;
-                console.log(interaction);
-                if (interaction.customId === 'select') {
-                    interaction.deferUpdate();
-                    message.reply('you selected '+interaction.values);
+                console.log(interaction.user, interaction.id, interaction.component);
+                if (interaction.customId === 'select' && interaction.user.id === author.id
+                                                        && interaction.channelId === message.channelId) {
+                    await interaction.deferUpdate();
+                    await message.reply('you selected '+interaction.values)
+                    .then(msg => {
+                        setTimeout(() => msg.delete(), 10000)
+                    })
+                    .then(() => {
+                        interaction.deleteReply()
+                        .then(console.log('Deleted reply'))
+                        .catch(console.error)
+                    })
+                    .catch(console.error);
                 }
             })
             // console.log(interaction)
