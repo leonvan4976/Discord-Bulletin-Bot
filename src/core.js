@@ -71,18 +71,21 @@ function command_scan(client_obj, delimiter_open, delimiter_close) {
             await message.channel.send({embeds: [tagEmbed], components: [createDropDown('Please select a tag',tagsToJSON())]})
                 .then(() => console.log(`Replied to message "${message.content}"`))
                 .catch(console.error);
-
+            
+            //Select Menu Interaction
             client_obj.on('interactionCreate', async interaction => {
                 if (!interaction.isSelectMenu()) return;
                 console.log(interaction.user, interaction.id, interaction.component);
                 if (interaction.customId === 'select' && interaction.user.id === author.id
-                                                        && interaction.channelId === message.channelId) {
+                                                      && interaction.channelId === message.channelId) {
                     await interaction.deferUpdate();
                     await message.reply('you selected '+interaction.values)
                     .then(msg => {
+                        //Delete the interaction reply after 10 seconds
                         setTimeout(() => msg.delete(), 10000)
                     })
                     .then(() => {
+                        //Delete the message with the component after the interaction is made
                         interaction.deleteReply()
                         .then(console.log('Deleted reply'))
                         .catch(console.error)
@@ -90,8 +93,6 @@ function command_scan(client_obj, delimiter_open, delimiter_close) {
                     .catch(console.error);
                 }
             })
-            // console.log(interaction)
-            // message.channel.send(interaction.values);
 
             return { 'author' : author , 'command_list' : command_list};
         }
