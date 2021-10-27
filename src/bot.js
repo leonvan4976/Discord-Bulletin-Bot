@@ -6,6 +6,21 @@
 require('dotenv').config();
 const examplelib = require("./exampleevents.js");
 const corelib = require("./core.js");
+const { Sequelize } = require('sequelize');
+
+/* connect to database */
+const sequelize = new Sequelize('test_db', 'root', 'root', {
+  host: 'localhost',
+  dialect: 'mysql'
+});
+
+try {
+  await sequelize.authenticate();
+  console.log('Connection has been established successfully.');
+} catch (error) {
+  console.error('Unable to connect to the database:', error);
+}
+
 
 /*
   Code to login the bot onto the servers.
