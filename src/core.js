@@ -59,7 +59,7 @@ function command_scan(client_obj, delimiter_open, delimiter_close) {
             function createDropDown(placeholder,tagsJSON){
                 return new MessageActionRow().addComponents(
                     new MessageSelectMenu()
-                        .setCustomId('select')
+                        .setCustomId(`select${message.id}`)
                         .setPlaceholder(placeholder)
                         .setMinValues(1)
                         .setMaxValues(demoTagsArr.length)
@@ -67,29 +67,35 @@ function command_scan(client_obj, delimiter_open, delimiter_close) {
                 )
             }
 
+            //Record the message's component id to compare with the interaction component id
+            let messageId = `select${message.id}`;
+
             //Have the bot send a channel message with the user profile and select menu
+            //!! This will later be an ephemeral message if it is triggered by a slash command (hopefully!)
+            //!! the slash command interaction allow interaction.reply({ephemeral: true})
             await message.channel.send({embeds: [tagEmbed], components: [createDropDown('Please select a tag',tagsToJSON())]})
                 .then(() => console.log(`Replied to message "${message.content}"`))
                 .catch(console.error);
-            
+      
+            const wait = require('util').promisify(setTimeout);
+
             //Select Menu Interaction
             client_obj.on('interactionCreate', async interaction => {
                 if (!interaction.isSelectMenu()) return;
-                console.log(interaction.user, interaction.id, interaction.component);
-                if (interaction.customId === 'select' && interaction.user.id === author.id
-                                                      && interaction.channelId === message.channelId) {
-                    await interaction.deferUpdate();
-                    await message.reply('you selected '+interaction.values)
-                    .then(msg => {
-                        //Delete the interaction reply after 10 seconds
-                        setTimeout(() => msg.delete(), 10000)
-                    })
-                    .then(() => {
-                        //Delete the message with the component after the interaction is made
-                        interaction.deleteReply()
-                        .then(console.log('Deleted reply'))
-                        .catch(console.error)
-                    })
+                console.log(interaction.user, interaction.id, interaction.component, messageId);
+                if (interaction.customId === messageId && interaction.user.id === author.id
+                                                      && interaction.channelId === message.channelId ) {
+                    // console.log('Only the interaction component id associated with the msg's component id passes through!!')                                      
+                    await interaction.deferUpdate()                                     
+                    .catch(console.error);
+                    //Delete message components                                    
+                    await interaction.editReply({content: 'you selected '+ interaction.values, embeds: [], components: []})
+                    .then((message) => console.log(`Reply sent`))
+                    .catch(console.error);
+
+                    await wait(10000);
+                    //Delete the selection message
+                    await interaction.deleteReply()
                     .catch(console.error);
                 }
             })
