@@ -4,7 +4,7 @@
 module.exports = (sequelize, DataTypes) => {
     return sequelize.define('users', {
         userId:{
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
             // userId will be the main identifier of Discord users
             primaryKey: true,
@@ -13,11 +13,11 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         userName:{
-            type: Sequelize.TEXT,
+            type: DataTypes.TEXT,
             allowNull: false,
         },
         banned:{
-            type: Sequelize.BOOLEAN
+            type: DataTypes.BOOLEAN
         },
     })
 };
