@@ -22,9 +22,17 @@ const force = process.argv.includes('--force') || process.argv.includes('-f');
 Users.hasMany(Posts, {foreignKey: 'userId', onDelete: 'CASCADE', onUpdate: 'CASCADE'});
 // "The User possess many subscription tags"
 Users.hasMany(Subscriptions, {foreignKey: 'userId', onDelete: 'CASCADE', onUpdate: 'CASCADE'});
-
+// "Each post has many post tags to categorize it."
+Posts.hasMany(PostTags, {foreignKey: 'postId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 Tags.hasMany(Subscriptions, {foreignKey: 'tagId'});
 Tags.hasMany(PostTags, {foreignKey: 'tagId'});
 
-sequelize.sync({ force }).catch(console.error);
+// Creates the tables, and print out the result. 
+sequelize.sync({ force })
+.then((result) => {
+	console.log(result);
+})
+.catch((err) =>{
+	console.log(err);
+});
 
