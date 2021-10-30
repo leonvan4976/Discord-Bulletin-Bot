@@ -19,5 +19,8 @@ module.exports = (sequelize, DataTypes) => {
         banned:{
             type: DataTypes.BOOLEAN
         },
+
+        // Note: User will have many Posts (set up in dbinit)
+        // Note: User will have many Subscriptions (set up in dbinit)
     })
 };
