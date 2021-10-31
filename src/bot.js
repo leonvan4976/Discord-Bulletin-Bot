@@ -49,7 +49,7 @@ client_obj.on('interactionCreate', async interaction => {
         await event_handler.command_private(interaction);
     }
     else if (commandName === 'profile') {
-        await event_handler.command_profile(interaction);
+        await event_handler.command_profile(client_obj,interaction);
     }
 });
 

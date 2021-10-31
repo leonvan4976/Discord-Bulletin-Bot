@@ -34,38 +34,104 @@ function command_private(interaction){
 
 // Responds with user profile.
 // This is where the updated drop down list code can be added.
-function command_profile(interaction){
+function command_profile(client_obj, interaction){
     const tagEmbed = new MessageEmbed()
-    .setColor('#0099ff') 
-    .setTitle('Tags')
-    .setAuthor(interaction.user.tag + "'s User Profile")
-    .setDescription('Some description here')
-    .setTimestamp();
+            .setColor('#0099ff') 
+            .setTitle('Tags')
+            .setAuthor(interaction.user.tag + "'s User Profile")
+            .setDescription('Some description here')
+            .setTimestamp();
 
-    //Create a tag option select menu
-    const Row1 = new MessageActionRow()
-    .addComponents(
-        new MessageSelectMenu()
-            .setCustomId('select')
-            .setPlaceholder('Nothing selected')
-            .addOptions([
-            {
-                label: 'Art',
-                emoji: '🎨',
-                value: 'first_option',
-            },
-            {
-                label: 'CS',
-                emoji: '💻',
-                value: 'second_option',
-            },
-        ]),
-    );
+            
+            //TODO: will import a list of tagas from database
+            //just a demo tags list for now
+            let demoTagsArr = ['cse101','cse130','cse140'];
+            //tagsTOJSON() returns a list of options objects, we can just .addOptions(tagsToJSON())later
+            function tagsToJSON() {
+                let optionsJSONArray = []
+                demoTagsArr.map((eachTag)=> {
+                    optionsJSONArray.push({label: eachTag, value: eachTag})
+                })
+                return optionsJSONArray;
+            }
 
-    //Have the bot send a channel message with the user profile and select menu
-    interaction.reply({embeds: [tagEmbed], components: [Row1]})
-    .then(() => console.log(`Replied to message "${interaction.commandName}"`))
-    .catch(console.error);
+            //Create a tag dropdown menu
+            function createDropDown(placeholder,tagsJSON){
+                return new MessageActionRow().addComponents(
+                    new MessageSelectMenu()
+                        // .setCustomId(`select${message.id}`)
+                        .setCustomId(`select`)
+                        .setPlaceholder(placeholder)
+                        .setMinValues(1)
+                        .setMaxValues(demoTagsArr.length)
+                        .addOptions(tagsJSON)
+                )
+            }
+
+            //Record the message's component id to compare with the interaction component id
+            // let messageId = `select${message.id}`;
+
+            //Have the bot send a channel message with the user profile and select menu
+            //!! This will later be an ephemeral message if it is triggered by a slash command (hopefully!)
+            //!! the slash command interaction allow interaction.reply({ephemeral: true})
+            interaction.reply({embeds: [tagEmbed], components: [createDropDown('Please select a tag',tagsToJSON())]})
+                .then(() => console.log(`Replied to message "${interaction.commandName}"`))
+                .catch(console.error);
+      
+            const wait = require('util').promisify(setTimeout);
+
+            //Select Menu Interaction, ddinteraction=drop down interaction
+            client_obj.on('interactionCreate', async ddinteraction => {
+                if (!ddinteraction.isSelectMenu()) return;
+                // console.log(ddinteraction.user, ddinteraction.id, ddinteraction.component, messageId);
+                // if (ddinteraction.customId === messageId && ddinteraction.user.id === author.id
+                //                                       && ddinteraction.channelId === message.channelId ) {
+                if(true){
+                    // console.log('Only the interaction component id associated with the msg's component id passes through!!')                                      
+                    await ddinteraction.deferUpdate()                                     
+                    .catch(console.error);
+                    //Delete message components                                    
+                    await ddinteraction.editReply({content: 'you selected '+ ddinteraction.values, embeds: [], components: []})
+                    .then((message) => console.log(`Reply sent`))
+                    .catch(console.error);
+
+                    await wait(10000);
+                    //Delete the selection message
+                    await ddinteraction.deleteReply()
+                    .catch(console.error);
+                }
+            })
+    // const tagEmbed = new MessageEmbed()
+    // .setColor('#0099ff') 
+    // .setTitle('Tags')
+    // .setAuthor(interaction.user.tag + "'s User Profile")
+    // .setDescription('Some description here')
+    // .setTimestamp();
+
+    // //Create a tag option select menu
+    // const Row1 = new MessageActionRow()
+    // .addComponents(
+    //     new MessageSelectMenu()
+    //         .setCustomId('select')
+    //         .setPlaceholder('Nothing selected')
+    //         .addOptions([
+    //         {
+    //             label: 'Art',
+    //             emoji: '🎨',
+    //             value: 'first_option',
+    //         },
+    //         {
+    //             label: 'CS',
+    //             emoji: '💻',
+    //             value: 'second_option',
+    //         },
+    //     ]),
+    // );
+
+    // //Have the bot send a channel message with the user profile and select menu
+    // interaction.reply({embeds: [tagEmbed], components: [Row1]})
+    // .then(() => console.log(`Replied to message "${interaction.commandName}"`))
+    // .catch(console.error);
 }
 
 
