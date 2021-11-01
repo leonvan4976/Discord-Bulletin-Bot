@@ -35,7 +35,7 @@ function command_private(interaction){
 // Responds with user profile.
 // This is where the updated drop down list code can be added.
 function command_profile(client_obj, interaction){
-    const tagEmbed = new MessageEmbed()
+            const tagEmbed = new MessageEmbed()
             .setColor('#0099ff') 
             .setTitle('Tags')
             .setAuthor(interaction.user.tag + "'s User Profile")
@@ -55,12 +55,14 @@ function command_profile(client_obj, interaction){
                 return optionsJSONArray;
             }
 
+            //Append a unique slash command interaction id to the component custom id
+            let componentId = `select${interaction.id}`;
+
             //Create a tag dropdown menu
             function createDropDown(placeholder,tagsJSON){
                 return new MessageActionRow().addComponents(
                     new MessageSelectMenu()
-                        // .setCustomId(`select${message.id}`)
-                        .setCustomId(`select`)
+                        .setCustomId(componentId)
                         .setPlaceholder(placeholder)
                         .setMinValues(1)
                         .setMaxValues(demoTagsArr.length)
@@ -68,13 +70,9 @@ function command_profile(client_obj, interaction){
                 )
             }
 
-            //Record the message's component id to compare with the interaction component id
-            // let messageId = `select${message.id}`;
-
             //Have the bot send a channel message with the user profile and select menu
-            //!! This will later be an ephemeral message if it is triggered by a slash command (hopefully!)
-            //!! the slash command interaction allow interaction.reply({ephemeral: true})
-            interaction.reply({embeds: [tagEmbed], components: [createDropDown('Please select a tag',tagsToJSON())]})
+            // Made this reply ephemeral to not spam the chat
+            interaction.reply({embeds: [tagEmbed], components: [createDropDown('Please select a tag',tagsToJSON())], ephemeral: true})
                 .then(() => console.log(`Replied to message "${interaction.commandName}"`))
                 .catch(console.error);
       
@@ -83,22 +81,18 @@ function command_profile(client_obj, interaction){
             //Select Menu Interaction, ddinteraction=drop down interaction
             client_obj.on('interactionCreate', async ddinteraction => {
                 if (!ddinteraction.isSelectMenu()) return;
-                // console.log(ddinteraction.user, ddinteraction.id, ddinteraction.component, messageId);
-                // if (ddinteraction.customId === messageId && ddinteraction.user.id === author.id
-                //                                       && ddinteraction.channelId === message.channelId ) {
-                if(true){
-                    // console.log('Only the interaction component id associated with the msg's component id passes through!!')                                      
+                console.log(ddinteraction.user, ddinteraction.id, ddinteraction.component, componentId);
+                // Compare the component id retrieved by the drop-down interaction with the current component id
+                if (ddinteraction.customId === componentId) {
+                    //console.log("Only the interaction component id associated with the msg's component id passes through!!")                                      
                     await ddinteraction.deferUpdate()                                     
                     .catch(console.error);
+
                     //Delete message components                                    
                     await ddinteraction.editReply({content: 'you selected '+ ddinteraction.values, embeds: [], components: []})
                     .then((message) => console.log(`Reply sent`))
                     .catch(console.error);
 
-                    await wait(10000);
-                    //Delete the selection message
-                    await ddinteraction.deleteReply()
-                    .catch(console.error);
                 }
             })
     // const tagEmbed = new MessageEmbed()
