@@ -14,12 +14,9 @@ function register_commands(){
     
     // List of commands to register and their descriptions.
     const commands = [
-        new SlashCommandBuilder().setName('ping').setDescription('Replies with pong!'),
-        new SlashCommandBuilder().setName('yo').setDescription('A hello message.'),
-        new SlashCommandBuilder().setName('server').setDescription('Replies with server info!'),
-        new SlashCommandBuilder().setName('user').setDescription('Replies with user info!'),
+        new SlashCommandBuilder().setName('register').setDescription('Add yourself to the bot\'s database.'),
+        new SlashCommandBuilder().setName('unregister').setDescription('Remove yourself from the bot\'s database.'),
         new SlashCommandBuilder().setName('profile').setDescription('Replies with user profile.'),
-        new SlashCommandBuilder().setName('private').setDescription('Replies with a message only visible to the one who used the command.'),
     ]
         .map(command => command.toJSON());
 

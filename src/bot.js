@@ -33,20 +33,11 @@ client_obj.on('interactionCreate', async interaction => {
     const { commandName } = interaction;
     
     // The code for each event is in event-handler.js.
-    if (commandName === 'ping') {
-        await event_handler.command_ping(interaction);
+    if (commandName === 'register') {
+        await event_handler.command_register(interaction);
     } 
-    else if (commandName === 'yo'){
-        await event_handler.command_yo(interaction);
-    }
-    else if (commandName === 'server') {
-        await event_handler.command_server(interaction);
-    } 
-    else if (commandName === 'user') {
-        await event_handler.command_user(interaction);
-    }
-    else if (commandName === 'private') {
-        await event_handler.command_private(interaction);
+    else if (commandName === 'unregister'){
+        await event_handler.command_unregister(interaction);
     }
     else if (commandName === 'profile') {
         await event_handler.command_profile(client_obj,interaction);
