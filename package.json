@@ -1,17 +1,20 @@
 {
-  "name": "DiscordBulletinBot",
+  "name": "discordbulletinbot",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./src/bot.js",
-    "dev": "nodemon ./src/bot.js"
+    "dev": "nodemon ./src/bot.js",
+    "dbinit": "node ./src/dbinit.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "sequelize": "^6.8.0",
+    "sqlite3": "^5.0.2"
     "@discordjs/builders": "^0.7.0",
     "@discordjs/rest": "^0.1.0-canary.0",
     "discord-api-types": "^0.24.0",

@@ -5,10 +5,12 @@
     event_handler:      a local library that contains the functions the bot uses to respond to commands.
 */
 require('dotenv').config();
-
+const examplelib = require("./exampleevents.js");
+const corelib = require("./core.js");
+const { Sequelize } = require('sequelize');
 const deploy_commands = require("./deploy-commands.js");
-
 const event_handler = require("./event-handler.js");
+
 
 /*
   Code to login the bot onto the servers.
