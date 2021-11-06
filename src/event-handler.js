@@ -2,17 +2,48 @@
     This file holds functions for how the bot responds to each command.
     Some of these example commands can be removed as we progress.
 */
-const { MessageActionRow, MessageSelectMenu, MessageEmbed } = require('discord.js');
+const { MessageActionRow, MessageSelectMenu, MessageEmbed, User } = require('discord.js');
+/*
+
+*/
+const { Users, Posts, Subscriptions, Tags, PostTags } = require('./dbObjects.js');
 
 // Add the user to the database.
 function command_register(interaction){
     let userTag = interaction.user.tag;
-    let userID = interaction.user.id;
-    
+    let userIdVar = interaction.user.id;
+    let response =`Hello ${userTag}, seems like something went wrong, try again!`;
+
     // code for adding user to the database.
-    
-    let response = `Hello ${userTag}, your profile has been created successfully.\nYou can use the profile command to add/remove tags.`;
+    Users.create({userId: userIdVar, userName: userTag});
+    response = `Hello ${userTag}, your profile has been created successfully.\nYou can use the profile command to add/remove tags.`;
     interaction.reply({content: response, ephemeral: true});
+
+    /*
+    const promise = new Promise((resolve, reject) =>{ 
+        let userTemp = Users.findByPk(userID);
+        if(userTemp === null){
+            Users.create({userId: userID, userName: userTag});
+            resolve(`Hello ${userTag}, your profile has been created successfully.\nYou can use the profile command to add/remove tags.`);
+        } else{
+            resolve(`Hello ${userTag}, your profile has been already registered!`);
+        }
+    });
+    //
+    promise.then((message) => {
+        interaction.reply({content: message, ephemeral: true});
+    }).catch((message) => {
+        console.log(message);
+    });
+    */
+    /*
+    const [user , created] = Users.findOrCreate({
+        where: {userId: userIdVar},
+        defaults:{
+            userId: userIdVar,
+        }
+    });
+    */
 }
 
 // Remove the user from the database.
