@@ -17,6 +17,10 @@ function register_commands(){
         new SlashCommandBuilder().setName('register').setDescription('Add yourself to the bot\'s database.'),
         new SlashCommandBuilder().setName('unregister').setDescription('Remove yourself from the bot\'s database.'),
         new SlashCommandBuilder().setName('profile').setDescription('Replies with user profile.'),
+        new SlashCommandBuilder().setName('post').setDescription('Post a message with associated tags.')
+        .addStringOption(option => option.setName('message')
+            .setDescription('Write a message to be delivered to subscribers.')
+            .setRequired(true)),
     ]
         .map(command => command.toJSON());
 
