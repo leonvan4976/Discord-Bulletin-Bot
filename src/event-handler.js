@@ -70,13 +70,13 @@ async function command_subscribe(client_obj, interaction) {
     const getAllTagsFromDB = ['1','2','3','4','5'];
     let userTag = interaction.user.tag;
     let userIdVar = interaction.user.id;
-    let response =`Hello ${userTag}, seems like something went wrong, try again!`;
-
-    await isUserRegistered(userIdVar)?console.log('found')  :console.log('cant');
-    // code for adding user to the database.
-    // const tag = await Tags.create({tagName: "sfxsszffj"});
-    // console.log('whats the id: '+tag.id);
-
+    const userRegistered = await isUserRegistered(userIdVar);
+    if ( !userRegistered ) {
+        const response = `Hello ${userTag}, you have not registered yet. Use /register to register`;
+        interaction.reply({content: response, ephemeral: true});
+        return;
+    }
+    // *************this block is for dev use only, remove later *********************
     //create fake demo tags if you database havent been set up
     let demoTagsArr = ['cse101','cse130','cse140'];
     // Check if there are already tags in the database
@@ -92,6 +92,7 @@ async function command_subscribe(client_obj, interaction) {
         }
     })
     .catch(console.error);
+    // ****************************
     
     const tags = await Tags.findAll();
     // console.log(tags);
@@ -206,6 +207,8 @@ async function isUserRegistered(userId) {
             }
         })
         .catch(false);
+    // return false if user[] is empty, otherwise, this user is registered
+    console.log(user);
     return user.length!==0;
 }
 
