@@ -2,7 +2,7 @@
     This file holds functions for how the bot responds to each command.
     Some of these example commands can be removed as we progress.
 */
-const { MessageActionRow, MessageSelectMenu, MessageEmbed, User } = require('discord.js');
+const { MessageActionRow, MessageSelectMenu, MessageEmbed, User, MessageButton } = require('discord.js');
 /*
 
 */
@@ -12,8 +12,8 @@ const { Users, Posts, Subscriptions, Tags, PostTags } = require('./dbObjects.js'
 function command_register(interaction){
     let userTag = interaction.user.tag;
     let userIdVar = interaction.user.id;
-    let response =`Hello ${userTag}, seems like something went wrong, try again!`;
-
+    let response =`Hello ${userTag}, you have already registered!`;
+    
     // code for adding user to the database.
     Users.create({userId: userIdVar, userName: userTag});
     response = `Hello ${userTag}, your profile has been created successfully.\nYou can use the profile command to add/remove tags.`;
@@ -46,19 +46,47 @@ function command_register(interaction){
     */
 }
 
-// Remove the user from the database.
-function command_unregister(interaction){
+function command_unregister(client_obj, interaction){
     let userTag = interaction.user.tag;
     let userID = interaction.user.id;
-    
+    const customId = 'unregister'+interaction.id;
+    const row = new MessageActionRow()
+            .addComponents(
+                new MessageButton()
+                    .setCustomId(customId)
+                    .setLabel('unregister')
+                    .setStyle('DANGER'),
+    );
+    //TODO: Check if user is registered
     let response = `Hello ${userTag}, are you sure you wish to delete your profile?`;
-    interaction.reply({content: response, ephemeral: true});
-    
-    // add reactions to the message so the user can respond.
-    // code for following up on the user's reaction.
-    
-    // code for nuking the user from the database.
-    
+    interaction.reply({ content: response, ephemeral: true, components: [row] });
+
+    const wait = require('util').promisify(setTimeout);
+
+    //binteraction= button interaction
+    client_obj.on('interactionCreate', async binteraction => {
+        if (!binteraction.isButton()) return;
+        console.log(binteraction+'bin');
+        console.log(interaction.id+'inte');
+        if(binteraction.customId===customId) {
+            await binteraction.deferUpdate()
+                .catch(console.error);
+            await binteraction.editReply({ content: 'Your Request is being processed.', components: [] });
+            index = await Users.destroy({
+                where: {
+                    userId: interaction.user.id
+                }
+            });
+            console.log(index);
+            if (index == 0) {
+                reply1 = "You are not a registered user."
+            } else {
+                reply1 = "Your profile has been cleared."
+            };
+            await interaction.followUp({ content: reply1, ephemeral: true, components: [] });
+        }
+        return;
+    });
 }
 
 // Responds with user profile.
@@ -201,15 +229,26 @@ function displayMenu(client_obj, interaction, description, arrayToDisplay) {
 }
 
 async function isUserRegistered(userId) {
-    const user = await Users.findAll({
+    const user = await Users.findOne({
         where: {
             userId: userId
             }
         })
         .catch(false);
+    console.log(user!=null);
     // return false if user[] is empty, otherwise, this user is registered
-    console.log(user);
-    return user.length!==0;
+    // return user.length!==0;
+    return user!=null;
+}
+
+async function getRegisteredUser(userId) {
+    const user = await Users.findOne({
+        where: {
+            userId: userId
+            }
+        })
+        .catch(false);
+    return user;
 }
 
 
