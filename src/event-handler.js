@@ -72,6 +72,7 @@ async function command_subscribe(client_obj, interaction) {
     let userIdVar = interaction.user.id;
     let response =`Hello ${userTag}, seems like something went wrong, try again!`;
 
+    await isUserRegistered(userIdVar)?console.log('found')  :console.log('cant');
     // code for adding user to the database.
     // const tag = await Tags.create({tagName: "sfxsszffj"});
     // console.log('whats the id: '+tag.id);
@@ -82,18 +83,18 @@ async function command_subscribe(client_obj, interaction) {
     Tags.findAndCountAll()
     .then((result)=> {
         if(result.count === 0){
-            console.log(result);
+            // console.log(result);
             for(const [i, name] of demoTagsArr.entries()){
                 // Temporarily add tags to database
                 Tags.create({id: i, tagName: name});
-                console.log('Tag created!')
+                // console.log('Tag created!')
             }
         }
     })
     .catch(console.error);
     
     const tags = await Tags.findAll();
-    console.log(tags);
+    // console.log(tags);
     // response = `Hello ${userTag}, your profile has been created successfully.\nYou can use the profile command to add/remove tags.`;
     // interaction.reply({content: response, ephemeral: true});
     displayMenu(client_obj, interaction, "Select tags that you want to subscribe!", tags);
@@ -114,7 +115,8 @@ async function command_subscribe(client_obj, interaction) {
             if(ddinteraction.values){
                 //ddintereation.values == arr of tagID the user selected
                 console.log('add id: '+userIdVar );
-                ddinteraction.values.map(id=>Subscriptions.create({userId: userIdVar, tagId: id}));
+                ddinteraction.values.map(id=>Subscriptions.create({userId: userIdVar+'fsf', tagId: id})
+                    .catch(err=>console.log('invalid user id or tag id')));
                 // Subscriptions.create({userId: userIdVar, tagId: 8});
             }
         }
@@ -148,6 +150,10 @@ function command_unsubscribe(client_obj, interaction) {
     })
     
 }
+
+// ************************************************************************
+
+// helper functions
 
 function displayMenu(client_obj, interaction, description, arrayToDisplay) {
     const tagEmbed = new MessageEmbed()
@@ -191,6 +197,16 @@ function displayMenu(client_obj, interaction, description, arrayToDisplay) {
         .catch(console.error);
 
     const wait = require('util').promisify(setTimeout);
+}
+
+async function isUserRegistered(userId) {
+    const user = await Users.findAll({
+        where: {
+            userId: userId
+            }
+        })
+        .catch(false);
+    return user.length!==0;
 }
 
 
