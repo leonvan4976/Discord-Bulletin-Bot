@@ -7,6 +7,7 @@ const { MessageActionRow, MessageSelectMenu, MessageEmbed, User, MessageButton }
 
 */
 const { Users, Posts, Subscriptions, Tags, PostTags } = require('./dbObjects.js');
+const { Op } = require("sequelize");
 
 // Add the user to the database.
 function command_register(interaction){
@@ -180,6 +181,180 @@ function command_unsubscribe(client_obj, interaction) {
     
 }
 
+function command_post(client_obj, interaction){
+    let userTag = interaction.user.tag;
+    let userID = interaction.user.id;
+    let message = interaction.options.getString('message');
+
+    let response = `Hello ${userTag}, you are posting the message: ${message}`;
+
+
+    //TODO: will import a list of tagas from database
+    //just a demo tags list for now
+    let demoTagsArr = ['cse101','cse130','cse140'];
+    // Check if there are already tags in the database
+    Tags.findAndCountAll()
+    .then((result)=> {
+        if(result.count === 0){
+            console.log(result);
+            for(const [i, name] of demoTagsArr.entries()){
+                // Temporarily add tags to database
+                Tags.create({id: i, tagName: name});
+                console.log('Tag created!')
+            }
+        }
+    })
+    .catch(console.error);
+    // Later you would just retrieve tags from database
+    //
+
+    //tagsTOJSON() returns a list of options objects, we can just .addOptions(tagsToJSON())later
+    function tagsToJSON() {
+        let optionsJSONArray = []
+        demoTagsArr.map((eachTag)=> {
+            optionsJSONArray.push({label: eachTag, value: eachTag})
+        })
+        return optionsJSONArray;
+    }
+
+    //Append a unique slash command interaction id to the component custom id
+    let componentId = `select${interaction.id}`;
+
+    //Create a tag dropdown menu
+    function createDropDown(placeholder,tagsJSON){
+        return new MessageActionRow().addComponents(
+            new MessageSelectMenu()
+                .setCustomId(componentId)
+                .setPlaceholder(placeholder)
+                .setMinValues(1)
+                .setMaxValues(demoTagsArr.length)
+                .addOptions(tagsJSON)
+        )
+    }
+
+    //Have the bot send a channel message with the user profile and select menu
+    interaction.reply({content: response, components: [createDropDown('Please select a tag',tagsToJSON())], ephemeral: true})
+        .then(() =>{
+            console.log(`Replied to message "${interaction.commandName}"`)
+        })
+        .catch(console.error);
+
+
+    //Select Menu Interaction, ddinteraction=drop down interaction
+    client_obj.once('interactionCreate', async ddinteraction => {
+        if (!ddinteraction.isSelectMenu()) return;
+        // Compare the component id retrieved by the drop-down interaction with the current component id
+        if (ddinteraction.customId === componentId) {                                      
+            await ddinteraction.deferUpdate()                                     
+            .then(() =>{
+                //Save chosen tags
+                for(let tag of ddinteraction.values){
+                    // Find the post tag's tag id from database using the tagName
+                    Tags.findAll({ where: { tagName: tag } })
+                    .then(function (availableTags){
+                        availableTags.forEach(function (aT){
+                            console.log(aT.id);
+                            // Create a post tag with the associated postid and tagid
+                            PostTags.create({tagName: tag, postId: interaction.id, tagId: aT.id})
+                        })
+                    })
+                    
+                }
+
+                // Store post and tags to database
+                console.log(message);
+                Posts.create({messageContent: message, id: interaction.id, userId: userID});
+
+            })
+            .catch(console.error);
+
+            //Delete message components                                    
+            await ddinteraction.editReply({content: 'you selected '+ ddinteraction.values, components: []})
+            .then((message) => console.log(`Reply sent`))
+            .catch(console.error);
+
+        }
+    })
+}
+
+/*
+
+// Save post to database with its associated tags and send post to all subscribers
+async function command_post(client_obj, interaction){
+    let userTag = interaction.user.tag;
+    let userID = interaction.user.id;
+    let message = interaction.options.getString('message');
+
+    let response = `Hello ${userTag}, you are posting the message: ${message}`;
+
+
+    // *************this block is for dev use only, remove later *********************
+    //create fake demo tags if you database havent been set up
+    let demoTagsArr = ['cse101','cse130','cse140'];
+    // Check if there are already tags in the database
+    Tags.findAndCountAll()
+    .then((result)=> {
+        if(result.count === 0){
+            // console.log(result);
+            for(const [i, name] of demoTagsArr.entries()){
+                // Temporarily add tags to database
+                Tags.create({id: i, tagName: name});
+                // console.log('Tag created!')
+            }
+        }
+    })
+    .catch(console.error);
+    // ****************************
+    
+    const tags = await Tags.findAll();
+    // console.log(tags);
+    // response = `Hello ${userTag}, your profile has been created successfully.\nYou can use the profile command to add/remove tags.`;
+    // interaction.reply({content: response, ephemeral: true});
+    displayMenu(client_obj, interaction, "Select which tags you wanna post to!", tags);
+
+    //Append a unique slash command interaction id to the component custom id
+    let componentId = `select${interaction.id}`;
+
+    //Select Menu Interaction, ddinteraction=drop down interaction
+    client_obj.once('interactionCreate', async ddinteraction => {
+        if (!ddinteraction.isSelectMenu()) return;
+        // Compare the component id retrieved by the drop-down interaction with the current component id
+        if (ddinteraction.customId === componentId) {                                      
+            await ddinteraction.deferUpdate()                                     
+            .then(() =>{
+                //Save chosen tags
+                console.log(ddinteraction.values+'fsfsfsfsfsffsfsf');
+                // for(let tag of ddinteraction.values){
+                //     // Find the post tag's tag id from database using the tagName
+                //     Tags.findAll({ where: { tagName: tag } })
+                //     .then(function (availableTags){
+                //         availableTags.forEach(function (aT){
+                //             console.log(aT.id);
+                //             // Create a post tag with the associated postid and tagid
+                //             PostTags.create({tagName: tag, postId: interaction.id, tagId: aT.id})
+                //         })
+                //     })
+                    
+                // }
+
+                // Store post and tags to database
+                console.log(message);
+                Posts.create({messageContent: message, id: interaction.id, userId: userID});
+
+            })
+            .catch(console.error);
+
+            //Delete message components                                    
+            await ddinteraction.editReply({content: 'you selected '+ ddinteraction.values, components: []})
+            .then((message) => console.log(`Reply sent`))
+            .catch(console.error);
+
+        }
+    })
+}
+*/
+
+
 // ************************************************************************
 
 // helper functions
@@ -218,7 +393,6 @@ function displayMenu(client_obj, interaction, description, arrayToDisplay) {
                 .addOptions(tagsJSON)
         )
     }
-
     //Have the bot send a channel message with the user profile and select menu
     // Made this reply ephemeral to not spam the chat
     interaction.reply({embeds: [tagEmbed], components: [createDropDown('Please select a tag',arrayToJSON())], ephemeral: true})
@@ -227,6 +401,8 @@ function displayMenu(client_obj, interaction, description, arrayToDisplay) {
 
     const wait = require('util').promisify(setTimeout);
 }
+
+
 
 async function isUserRegistered(userId) {
     const user = await Users.findOne({
@@ -254,4 +430,4 @@ async function getRegisteredUser(userId) {
 
 // Exporting functions.
 // IF ADD OR REMOVE ANY FUNCTIONS, BE SURE TO MODIFY THIS LIST ACCORDINGLY.
-module.exports = { command_register, command_unregister, command_profile, command_subscribe, command_unsubscribe }
+module.exports = { command_register, command_unregister, command_profile, command_subscribe, command_unsubscribe, command_post }

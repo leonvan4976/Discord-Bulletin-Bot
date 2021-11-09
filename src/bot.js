@@ -48,6 +48,8 @@ client_obj.on('interactionCreate', async interaction => {
     }
     else if (commandName === 'unsubscribe') {
         await event_handler.command_unsubscribe(client_obj,interaction);
+    }else if (commandName === 'post') {
+        await event_handler.command_post(client_obj, interaction);
     }
 });
 
@@ -56,4 +58,4 @@ client_obj.login(process.env.DISCORDJS_BOT_TOKEN);
 
 client_obj.on('ready', () => {
     console.log(`${client_obj.user.tag} has logged in`);
-});
+})

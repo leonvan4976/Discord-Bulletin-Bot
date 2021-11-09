@@ -19,6 +19,10 @@ function register_commands(){
         new SlashCommandBuilder().setName('profile').setDescription('Replies with user profile.'),
         new SlashCommandBuilder().setName('unsubscribe').setDescription('Unsubscribe from a tag.'),
         new SlashCommandBuilder().setName('subscribe').setDescription('Subscribe to a tag you are interested in.'),
+        new SlashCommandBuilder().setName('post').setDescription('Post a message with associated tags.')
+        .addStringOption(option => option.setName('message')
+            .setDescription('Write a message to be delivered to subscribers.')
+            .setRequired(true)),
     ]
         .map(command => command.toJSON());
 
