@@ -17,6 +17,8 @@ function register_commands(){
         new SlashCommandBuilder().setName('register').setDescription('Add yourself to the bot\'s database.'),
         new SlashCommandBuilder().setName('unregister').setDescription('Remove yourself from the bot\'s database.'),
         new SlashCommandBuilder().setName('profile').setDescription('Replies with user profile.'),
+        new SlashCommandBuilder().setName('unsubscribe').setDescription('Unsubscribe from a tag.'),
+        new SlashCommandBuilder().setName('subscribe').setDescription('Subscribe to a tag you are interested in.'),
     ]
         .map(command => command.toJSON());
 
