@@ -37,10 +37,17 @@ client_obj.on('interactionCreate', async interaction => {
         await event_handler.command_register(interaction);
     } 
     else if (commandName === 'unregister'){
-        await event_handler.command_unregister(interaction);
+        await event_handler.command_unregister(client_obj,interaction);
     }
     else if (commandName === 'profile') {
+        // console.log('ghegeg'+interaction.options);
         await event_handler.command_profile(client_obj,interaction);
+    }
+    else if (commandName === 'subscribe') {
+        await event_handler.command_subscribe(client_obj,interaction);
+    }
+    else if (commandName === 'unsubscribe') {
+        await event_handler.command_unsubscribe(client_obj,interaction);
     }
 });
 
