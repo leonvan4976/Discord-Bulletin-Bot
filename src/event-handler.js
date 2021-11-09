@@ -2,7 +2,7 @@
     This file holds functions for how the bot responds to each command.
     Some of these example commands can be removed as we progress.
 */
-const { MessageActionRow, MessageSelectMenu, MessageEmbed, User } = require('discord.js');
+const { MessageActionRow, MessageSelectMenu, MessageEmbed, MessageButton, User } = require('discord.js');
 /*
 
 */
@@ -47,18 +47,47 @@ function command_register(interaction){
 }
 
 // Remove the user from the database.
-function command_unregister(interaction){
+function command_unregister(client_obj, interaction){
     let userTag = interaction.user.tag;
     let userID = interaction.user.id;
+
+    const customId = 'unregister' + interaction.id;
     
+    const row = new MessageActionRow()
+            .addComponents(
+                new MessageButton()
+                    .setCustomId(customId)
+                    .setLabel('unregister')
+                    .setStyle('DANGER'),
+    );
+
     let response = `Hello ${userTag}, are you sure you wish to delete your profile?`;
-    interaction.reply({content: response, ephemeral: true});
-    
-    // add reactions to the message so the user can respond.
-    // code for following up on the user's reaction.
-    
-    // code for nuking the user from the database.
-    
+    interaction.reply({ content: response, ephemeral: true, components: [row] });
+
+    const wait = require('util').promisify(setTimeout);
+
+    //binteraction= button interaction
+    client_obj.on('interactionCreate', async binteraction => {
+        if (!binteraction.isButton()) return;
+        if(binteraction.customId===customId) {
+            await binteraction.deferUpdate()
+                .catch(console.error);
+            await binteraction.editReply({ content: 'Your Request is being processed.', components: [] });
+            index = await Users.destroy({
+                where: {
+                    userId: interaction.user.id
+                }
+            });
+            console.log(index);
+            if (index == 0) {
+                reply1 = "You are not a registered user."
+            } else {
+                reply1 = "Your profile has been cleared."
+            };
+            await interaction.followUp({ content: reply1, ephemeral: true, components: [] });
+        }
+        return;
+    });
 }
 
 // Responds with user profile.
