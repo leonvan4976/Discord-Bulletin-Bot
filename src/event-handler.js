@@ -135,7 +135,7 @@ function command_post(client_obj, interaction){
 
 
     //Select Menu Interaction, ddinteraction=drop down interaction
-    client_obj.on('interactionCreate', async ddinteraction => {
+    client_obj.once('interactionCreate', async ddinteraction => {
         if (!ddinteraction.isSelectMenu()) return;
         // Compare the component id retrieved by the drop-down interaction with the current component id
         if (ddinteraction.customId === componentId) {                                      
