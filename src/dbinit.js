@@ -30,7 +30,7 @@ Tags.hasMany(PostTags, {foreignKey: 'tagId'});
 // Creates the tables, and print out the result. 
 sequelize.sync({ force })
 .then((result) => {
-	console.log(result);
+	console.log('Database has been successfully created');
 })
 .catch((err) =>{
 	console.log(err);
