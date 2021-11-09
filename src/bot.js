@@ -9,6 +9,8 @@ const { Sequelize } = require('sequelize');
 const deploy_commands = require("./deploy-commands.js");
 const event_handler = require("./event-handler.js");
 
+// database imports
+const { Users, Posts, Subscriptions, Tags, PostTags } = require('./dbObjects.js');
 
 /*
   Code to login the bot onto the servers.
@@ -24,30 +26,54 @@ const client_obj = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GU
 // This code is in deploy-commands.js
 deploy_commands.register_commands();
 
-// In response to a slash command.
+// Event handler
 client_obj.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()){ 
+    // In response to a slash command.
+    if (interaction.isCommand()){ 
+        const { commandName } = interaction;
+        // The code for each event is in event-handler.js.
+        if (commandName === 'register') {
+            await event_handler.command_register(interaction);
+        } 
+        else if (commandName === 'unregister'){
+            await event_handler.command_unregister(client_obj,interaction);
+        }
+        else if (commandName === 'profile') {
+            // console.log('ghegeg'+interaction.options);
+            await event_handler.command_profile(client_obj,interaction);
+        }
+        else if (commandName === 'subscribe') {
+            await event_handler.command_subscribe(client_obj,interaction);
+        }
+        else if (commandName === 'unsubscribe') {
+            await event_handler.command_unsubscribe(client_obj,interaction);
+        }
+    }
+    // In response to a button.
+    else if (interaction.isButton()){
+        if(interaction.customId==='unregister') {
+            await interaction.deferUpdate()
+                .catch(console.error);
+            await interaction.editReply({ content: 'Your Request is being processed.', components: [] });
+            index = await Users.destroy({
+                where: {
+                    userId: interaction.user.id
+                }
+            });
+            
+            //console.log(index);
+            if (index == 0) {
+                reply1 = "You are not a registered user."
+            } else {
+                reply1 = "Your profile has been cleared."
+            };
+            await interaction.followUp({ content: reply1, ephemeral: true, components: [] });
+        }
+    }
+    // Missing response to a select menu.
+    // If not a valid interaction.
+    else{
         return;
-    }
-
-    const { commandName } = interaction;
-    
-    // The code for each event is in event-handler.js.
-    if (commandName === 'register') {
-        await event_handler.command_register(interaction);
-    } 
-    else if (commandName === 'unregister'){
-        await event_handler.command_unregister(client_obj,interaction);
-    }
-    else if (commandName === 'profile') {
-        // console.log('ghegeg'+interaction.options);
-        await event_handler.command_profile(client_obj,interaction);
-    }
-    else if (commandName === 'subscribe') {
-        await event_handler.command_subscribe(client_obj,interaction);
-    }
-    else if (commandName === 'unsubscribe') {
-        await event_handler.command_unsubscribe(client_obj,interaction);
     }
 });
 

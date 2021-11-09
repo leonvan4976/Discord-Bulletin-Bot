@@ -32,7 +32,7 @@ function command_unregister(client_obj, interaction){
     let userTag = interaction.user.tag;
     let userID = interaction.user.id;
 
-    const customId = 'unregister' + interaction.id;
+    const customId = 'unregister';
     
     const row = new MessageActionRow()
             .addComponents(
@@ -47,28 +47,6 @@ function command_unregister(client_obj, interaction){
 
     const wait = require('util').promisify(setTimeout);
 
-    //binteraction= button interaction
-    client_obj.on('interactionCreate', async binteraction => {
-        if (!binteraction.isButton()) return;
-        if(binteraction.customId===customId) {
-            await binteraction.deferUpdate()
-                .catch(console.error);
-            await binteraction.editReply({ content: 'Your Request is being processed.', components: [] });
-            index = await Users.destroy({
-                where: {
-                    userId: interaction.user.id
-                }
-            });
-            console.log(index);
-            if (index == 0) {
-                reply1 = "You are not a registered user."
-            } else {
-                reply1 = "Your profile has been cleared."
-            };
-            await interaction.followUp({ content: reply1, ephemeral: true, components: [] });
-        }
-        return;
-    });
 }
 
 // Responds with user profile.
