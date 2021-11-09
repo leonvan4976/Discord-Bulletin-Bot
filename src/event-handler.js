@@ -145,7 +145,7 @@ async function command_subscribe(client_obj, interaction) {
             if(ddinteraction.values){
                 //ddintereation.values == arr of tagID the user selected
                 console.log('add id: '+userIdVar );
-                ddinteraction.values.map(id=>Subscriptions.create({userId: userIdVar+'fsf', tagId: id})
+                ddinteraction.values.map(id=>Subscriptions.create({userId: userIdVar, tagId: id})
                     .catch(err=>console.log('invalid user id or tag id')));
                 // Subscriptions.create({userId: userIdVar, tagId: 8});
             }
