@@ -48,6 +48,23 @@ function command_unregister(client_obj, interaction){
     const wait = require('util').promisify(setTimeout);
 
 }
+async function button_unregister(interaction) {
+    await interaction.deferUpdate()
+        .catch(console.error);
+    await interaction.editReply({ content: 'Your Request is being processed.', components: [] });
+    const index = await Users.destroy({
+        where: {
+            userId: interaction.user.id
+        }
+    });
+    console.log(index);
+    if (index == 0) {
+        reply = "You are not a registered user."
+    } else {
+        reply = "Your profile has been cleared."
+    };
+    await interaction.followUp({ content: reply, ephemeral: true, components: [] });
+}
 
 // Responds with user profile.
 function command_profile(client_obj, interaction){
@@ -203,4 +220,4 @@ async function isUserRegistered(userId) {
 
 // Exporting functions.
 // IF ADD OR REMOVE ANY FUNCTIONS, BE SURE TO MODIFY THIS LIST ACCORDINGLY.
-module.exports = { command_register, command_unregister, command_profile, command_subscribe, command_unsubscribe }
+module.exports = { command_register, command_unregister, button_unregister, command_profile, command_subscribe, command_unsubscribe }

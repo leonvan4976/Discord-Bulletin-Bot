@@ -9,9 +9,6 @@ const { Sequelize } = require('sequelize');
 const deploy_commands = require("./deploy-commands.js");
 const event_handler = require("./event-handler.js");
 
-// database imports
-const { Users, Posts, Subscriptions, Tags, PostTags } = require('./dbObjects.js');
-
 /*
   Code to login the bot onto the servers.
     client_obj:   a object of the Client class, the main hub for interacting with
@@ -52,22 +49,7 @@ client_obj.on('interactionCreate', async interaction => {
     // In response to a button.
     else if (interaction.isButton()){
         if(interaction.customId==='unregister') {
-            await interaction.deferUpdate()
-                .catch(console.error);
-            await interaction.editReply({ content: 'Your Request is being processed.', components: [] });
-            index = await Users.destroy({
-                where: {
-                    userId: interaction.user.id
-                }
-            });
-            
-            //console.log(index);
-            if (index == 0) {
-                reply1 = "You are not a registered user."
-            } else {
-                reply1 = "Your profile has been cleared."
-            };
-            await interaction.followUp({ content: reply1, ephemeral: true, components: [] });
+            await event_handler.button_unregister(interaction);
         }
     }
     // Missing response to a select menu.
