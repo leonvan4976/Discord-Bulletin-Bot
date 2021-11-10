@@ -122,12 +122,13 @@ async function command_subscribe(client_obj, interaction) {
     })
     .catch(console.error);
     // ****************************
-    
-    const tags = await Tags.findAll();
-    // console.log(tags);
-    // response = `Hello ${userTag}, your profile has been created successfully.\nYou can use the profile command to add/remove tags.`;
-    // interaction.reply({content: response, ephemeral: true});
-    displayMenu(client_obj, interaction, "Select tags that you want to subscribe!", tags);
+    const unsubscribeTags = await getUnsubscribedTags(userIdVar);
+    if (unsubscribeTags.length===0) {
+        const response = `Hello ${userTag}, there is no new tag at this moment:).`;
+        interaction.reply({content: response, ephemeral: true});
+        return;
+    }
+    displayMenu(client_obj, interaction, "Select tags that you want to subscribe!", unsubscribeTags);
     let componentId = `select${interaction.id}`;
     client_obj.on('interactionCreate', async ddinteraction => {
         if (!ddinteraction.isSelectMenu()) return;
@@ -147,15 +148,27 @@ async function command_subscribe(client_obj, interaction) {
                 console.log('add id: '+userIdVar );
                 ddinteraction.values.map(id=>Subscriptions.create({userId: userIdVar, tagId: id})
                     .catch(err=>console.log('invalid user id or tag id')));
-                // Subscriptions.create({userId: userIdVar, tagId: 8});
             }
         }
     })
 }
 
-function command_unsubscribe(client_obj, interaction) {
-    const getSubTagsFromDB = ['1','2','3'];
-    displayMenu(client_obj, interaction, "Select tags you want to unsubscribe!", getSubTagsFromDB);
+async function command_unsubscribe(client_obj, interaction) {
+    let userTag = interaction.user.tag;
+    let userIdVar = interaction.user.id;
+    const userRegistered = await isUserRegistered(userIdVar);
+    if ( !userRegistered ) {
+        const response = `Hello ${userTag}, you have not registered yet. Use /register to register`;
+        interaction.reply({content: response, ephemeral: true});
+        return;
+    }
+    const subscibedtags = await getSubscribedTags(userIdVar);
+    if (subscibedtags.length===0) {
+        const response = `Hello ${userTag}, you have not subscribe to any tag yet. Use /subscribe to subscribe`;
+        interaction.reply({content: response, ephemeral: true});
+        return;
+    }
+    displayMenu(client_obj, interaction, "Select tags you want to unsubscribe!", subscibedtags);
     //Append a unique slash command interaction id to the component custom id
     let componentId = `select${interaction.id}`;
     client_obj.on('interactionCreate', async ddinteraction => {
@@ -168,13 +181,19 @@ function command_unsubscribe(client_obj, interaction) {
             .catch(console.error);
 
             //Delete message components                                    
-            await ddinteraction.editReply({content: 'you selected '+ ddinteraction.values, embeds: [], components: []})
+            await ddinteraction.editReply({content: 'you selected tagID: '+ ddinteraction.values, embeds: [], components: []})
             .then((message) => ddinteraction.values)
             .catch(console.error);
-
-
             if(ddinteraction.values){
-                //ddintereaction.values is the array of selected tags
+                //ddintereation.values == arr of tagID the user selected
+                console.log('add id: '+userIdVar );
+                ddinteraction.values.map(id=>{
+                    Subscriptions.findOne({
+                        where: {userId: userIdVar, tagId: id}
+                    })
+                    .then(sub=> sub.destroy())
+                    .catch('User tag: '+userTag+' failed to unsubscribe tag id: '+id)
+                })
             }
         }
     })
@@ -277,82 +296,6 @@ function command_post(client_obj, interaction){
     })
 }
 
-/*
-
-// Save post to database with its associated tags and send post to all subscribers
-async function command_post(client_obj, interaction){
-    let userTag = interaction.user.tag;
-    let userID = interaction.user.id;
-    let message = interaction.options.getString('message');
-
-    let response = `Hello ${userTag}, you are posting the message: ${message}`;
-
-
-    // *************this block is for dev use only, remove later *********************
-    //create fake demo tags if you database havent been set up
-    let demoTagsArr = ['cse101','cse130','cse140'];
-    // Check if there are already tags in the database
-    Tags.findAndCountAll()
-    .then((result)=> {
-        if(result.count === 0){
-            // console.log(result);
-            for(const [i, name] of demoTagsArr.entries()){
-                // Temporarily add tags to database
-                Tags.create({id: i, tagName: name});
-                // console.log('Tag created!')
-            }
-        }
-    })
-    .catch(console.error);
-    // ****************************
-    
-    const tags = await Tags.findAll();
-    // console.log(tags);
-    // response = `Hello ${userTag}, your profile has been created successfully.\nYou can use the profile command to add/remove tags.`;
-    // interaction.reply({content: response, ephemeral: true});
-    displayMenu(client_obj, interaction, "Select which tags you wanna post to!", tags);
-
-    //Append a unique slash command interaction id to the component custom id
-    let componentId = `select${interaction.id}`;
-
-    //Select Menu Interaction, ddinteraction=drop down interaction
-    client_obj.once('interactionCreate', async ddinteraction => {
-        if (!ddinteraction.isSelectMenu()) return;
-        // Compare the component id retrieved by the drop-down interaction with the current component id
-        if (ddinteraction.customId === componentId) {                                      
-            await ddinteraction.deferUpdate()                                     
-            .then(() =>{
-                //Save chosen tags
-                console.log(ddinteraction.values+'fsfsfsfsfsffsfsf');
-                // for(let tag of ddinteraction.values){
-                //     // Find the post tag's tag id from database using the tagName
-                //     Tags.findAll({ where: { tagName: tag } })
-                //     .then(function (availableTags){
-                //         availableTags.forEach(function (aT){
-                //             console.log(aT.id);
-                //             // Create a post tag with the associated postid and tagid
-                //             PostTags.create({tagName: tag, postId: interaction.id, tagId: aT.id})
-                //         })
-                //     })
-                    
-                // }
-
-                // Store post and tags to database
-                console.log(message);
-                Posts.create({messageContent: message, id: interaction.id, userId: userID});
-
-            })
-            .catch(console.error);
-
-            //Delete message components                                    
-            await ddinteraction.editReply({content: 'you selected '+ ddinteraction.values, components: []})
-            .then((message) => console.log(`Reply sent`))
-            .catch(console.error);
-
-        }
-    })
-}
-*/
 
 
 // ************************************************************************
@@ -425,6 +368,68 @@ async function getRegisteredUser(userId) {
         })
         .catch(false);
     return user;
+}
+
+async function getSubscribedTags(userId) {
+    const user = await getRegisteredUser(userId);
+    const tags = [];
+    const subscriptions = await Subscriptions.findAll({ where: { userId: userId } })
+        .catch(()=>{
+            console.log(user+' has an error while getting the subscription')
+        });
+    for(const sub of subscriptions) {
+        const name = await getTagName(sub.tagId);
+        const obj = {tagName: name, id: sub.tagId};
+        tags.push(obj);
+    }
+    return tags;
+}
+
+async function getSubscribedTagIds(userId) {
+    const user = await getRegisteredUser(userId);
+    const tagIds = new Set();
+    const subscriptions = await Subscriptions.findAll({ where: { userId: userId } })
+        .catch(()=>{
+            console.log(user+' has an error while getting the subscription')
+        });
+    for(const sub of subscriptions) {
+        tagIds.add(sub.tagId);
+    }
+    return tagIds;
+}
+
+async function getUnsubscribedTags(userId) {
+    const subIds = await getSubscribedTagIds(userId);
+    const unsubs = [];
+    const allTags = await getAllTags();
+    for(const tag of allTags) {
+        if(!subIds.has(tag.id)) {
+            unsubs.push(tag);
+        }
+    }
+    return unsubs;
+}
+
+async function getAllTags() {
+    const tags = await Tags.findAll()
+        .catch(err=>console.log(err+'Error occur when trying the fetch all tags from DB'));
+    return tags;
+}
+
+async function getTagName(tagId) {
+    const tag = await Tags.findOne({
+        attributes: ['tagName'],
+        where: { id: tagId }
+        })
+        .catch(err=>{
+            console.log('error occurs when searching this tag id: '+tagId)
+        });
+    if(tag && tag.tagName){
+        return tag.tagName;
+    }else{
+        console.log(tagId);
+        return 'tagName of '+tagId+' is undefined';
+    }
 }
 
 
