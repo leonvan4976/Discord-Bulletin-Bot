@@ -28,47 +28,38 @@ async function command_register(interaction){
 }
 
 // Remove the user from the database.
-function command_unregister(client_obj, interaction){
+async function command_unregister(interaction){
     let userTag = interaction.user.tag;
     let userID = interaction.user.id;
-
-    const customId = 'unregister' + interaction.id;
     
     const row = new MessageActionRow()
             .addComponents(
                 new MessageButton()
-                    .setCustomId(customId)
+                    .setCustomId('unregister')
                     .setLabel('unregister')
                     .setStyle('DANGER'),
     );
 
     let response = `Hello ${userTag}, are you sure you wish to delete your profile?`;
     interaction.reply({ content: response, ephemeral: true, components: [row] });
-
     const wait = require('util').promisify(setTimeout);
-
-    //binteraction= button interaction
-    client_obj.on('interactionCreate', async binteraction => {
-        if (!binteraction.isButton()) return;
-        if(binteraction.customId===customId) {
-            await binteraction.deferUpdate()
-                .catch(console.error);
-            await binteraction.editReply({ content: 'Your Request is being processed.', components: [] });
-            index = await Users.destroy({
-                where: {
-                    userId: interaction.user.id
-                }
-            });
-            console.log(index);
-            if (index == 0) {
-                reply1 = "You are not a registered user."
-            } else {
-                reply1 = "Your profile has been cleared."
-            };
-            await interaction.followUp({ content: reply1, ephemeral: true, components: [] });
+}
+async function button_unregister(interaction) {
+    await interaction.deferUpdate()
+        .catch(console.error);
+    await interaction.editReply({ content: 'Your Request is being processed.', components: [] });
+    const index = await Users.destroy({
+        where: {
+            userId: interaction.user.id
         }
-        return;
     });
+    console.log(index);
+    if (index == 0) {
+        reply = "You are not a registered user."
+    } else {
+        reply = "Your profile has been cleared."
+    };
+    await interaction.followUp({ content: reply, ephemeral: true, components: [] });
 }
 
 // Responds with user profile.
@@ -225,4 +216,4 @@ async function isUserRegistered(userId) {
 
 // Exporting functions.
 // IF ADD OR REMOVE ANY FUNCTIONS, BE SURE TO MODIFY THIS LIST ACCORDINGLY.
-module.exports = { command_register, command_unregister, command_profile, command_subscribe, command_unsubscribe }
+module.exports = { command_register, command_unregister, button_unregister, command_profile, command_subscribe, command_unsubscribe }

@@ -37,7 +37,7 @@ client_obj.on('interactionCreate', async interaction => {
         await event_handler.command_register(interaction);
     } 
     else if (commandName === 'unregister'){
-        await event_handler.command_unregister(client_obj,interaction);
+        await event_handler.command_unregister(interaction);
     }
     else if (commandName === 'profile') {
         // console.log('ghegeg'+interaction.options);
@@ -50,6 +50,19 @@ client_obj.on('interactionCreate', async interaction => {
         await event_handler.command_unsubscribe(client_obj,interaction);
     }
 });
+client_obj.on('interactionCreate', async interaction => {
+    if (!interaction.isButton()){ 
+        return;
+    }
+    console.log(interaction)
+    const { customId } = interaction;
+    
+    // The code for each event is in event-handler.js.
+    if (customId === 'unregister') {
+        await event_handler.button_unregister(interaction);
+    } 
+});
+
 
 //This code logs in our bot.
 client_obj.login(process.env.DISCORDJS_BOT_TOKEN);
