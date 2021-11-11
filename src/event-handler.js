@@ -258,39 +258,39 @@ async function command_post(client_obj, interaction){
         if (!ddinteraction.isSelectMenu()) return;
         // Compare the component id retrieved by the drop-down interaction with the current component id
         if (ddinteraction.customId === componentId) {                                      
-            await ddinteraction.deferUpdate()                                     
-            .then(() =>{
-                // Store post and tags to database
-                console.log(message);
-                Posts.create({messageContent: message, id: interaction.id, userId: userID})
-                .catch(err => { console.error('Invalid user id or tag id') });
+            await ddinteraction.deferUpdate()
+            .catch(console.error);                                     
+            // Store post and tags to database
+            let pId = await Posts.create({messageContent: message, userId: userID})
+            .catch(err => { console.error('Invalid user id or tag id') });
 
-                //Save chosen tags
-                for(let tag of ddinteraction.values){
-                    // Find the post tag's tag name from database using the tagId
-                    Tags.findAll({ where: { id: tag } })
-                    .then(function (availableTags){
-                        availableTags.forEach(function (aT){
-                            // Create a post tag with the associated postid and tagid
-                            PostTags.create({tagName: aT.tagName, postId: interaction.id, tagId: tag})
-                            .catch(err => { console.error('Invalid post id or tag id') });
+            // Save chosen tags
+            for(let tag of ddinteraction.values){
+                // Find the post tag's tag name from database using the tagId
+                Tags.findAll({ where: { id: tag } })
+                .then(function (availableTags){
+                    availableTags.forEach(function (aT){
+                        // Create a post tag with the associated postid and tagid
+                        PostTags.create({tagName: aT.tagName, postId: pId.id, tagId: tag})
+                        .catch(err => { console.error('Invalid post id or tag id') });
 
-                        })
                     })
-                    .catch(err => console.error(err));
-                    
-                }
+                })
+                .catch(err => console.error(err));
+                
+            }
 
-            })
-            .catch(console.error);
-
-            //Get all tag names of chosen tags
+            // Get all tag names of chosen tags
             let tagNameArr = await getTagNames(ddinteraction.values);
 
-            //Delete message components                                
+            // Delete message components                                
             await ddinteraction.editReply({content: `You posted "${message}" with the selected tags: ${tagNameArr}`, embeds: [], components: []})
             .then((message) => console.log(`Reply sent`))
             .catch(console.error);
+            
+            // Pull subscriptions
+            await sendSubscribedPosts(client_obj, ddinteraction.values);
+
 
         }
     })
@@ -300,6 +300,43 @@ async function command_post(client_obj, interaction){
 // ************************************************************************
 
 // helper functions
+
+// DMs all subscribed users of the tags in selectTagArr
+async function sendSubscribedPosts(client_obj, selectTagArr){
+    for(let tag of selectTagArr){
+        let subbedTags = await Subscriptions.findAll({ where: { tagId: tag } })
+        .catch(err => console.error(err));
+
+        let subbedPost = await PostTags.findAll({ where: { tagId: tag } })
+        .catch(err => console.error(err));
+
+        // Send Direct message all subscribed users with all posts associated with tag
+        // Get the subbedTags' userIds and subbedPost's postId
+        // let postArr = subbedPost.map(sP => sP.postId);
+
+        for(let u of subbedTags){
+            let user = await client_obj.users.fetch(u.userId)
+            .catch(err => console.error(err));
+
+            for(let sP of subbedPost){
+                console.log(sP.tagName, sP.postId, sP.createdAt);
+                let posts = await Posts.findAll({ where: { id: sP.postId } })
+                .catch(err => console.error(err));
+                
+                await posts.forEach(p => {
+                    user.send(p.messageContent);
+
+                })
+
+                //Destroy sent posts from database
+                // await Posts.destroy({ where: { id: sP.postId } })
+                // .catch(err => console.error(err));
+            }
+        }
+
+    }
+}
+
 
 function displayMenu(client_obj, interaction, description, arrayToDisplay) {
     const tagEmbed = new MessageEmbed()
