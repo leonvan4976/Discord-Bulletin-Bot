@@ -28,24 +28,23 @@ async function command_register(interaction){
 }
 
 // Remove the user from the database.
-function command_unregister(client_obj, interaction){
+async function command_unregister(interaction){
     let userTag = interaction.user.tag;
     let userID = interaction.user.id;
 
-    const customId = 'unregister';
     
     const row = new MessageActionRow()
             .addComponents(
                 new MessageButton()
-                    .setCustomId(customId)
+                    .setCustomId('unregister')
                     .setLabel('unregister')
                     .setStyle('DANGER'),
     );
 
     let response = `Hello ${userTag}, are you sure you wish to delete your profile?`;
     interaction.reply({ content: response, ephemeral: true, components: [row] });
-
     const wait = require('util').promisify(setTimeout);
+
 
 }
 async function button_unregister(interaction) {
