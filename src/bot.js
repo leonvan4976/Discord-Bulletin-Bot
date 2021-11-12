@@ -62,8 +62,6 @@ client_obj.on('interactionCreate', async interaction => {
     } 
 });
 
-bbbbbccbb +
-             0
 //This code logs in our bot.
 client_obj.login(process.env.DISCORDJS_BOT_TOKEN);
 
