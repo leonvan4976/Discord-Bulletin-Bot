@@ -54,7 +54,6 @@ client_obj.on('interactionCreate', async interaction => {
     if (!interaction.isButton()){ 
         return;
     }
-    console.log(interaction)
     const { customId } = interaction;
     
     // The code for each event is in event-handler.js.
@@ -63,7 +62,8 @@ client_obj.on('interactionCreate', async interaction => {
     } 
 });
 
-
+bbbbbccbb +
+             0
 //This code logs in our bot.
 client_obj.login(process.env.DISCORDJS_BOT_TOKEN);
 
