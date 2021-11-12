@@ -31,6 +31,7 @@ async function command_register(interaction){
 async function command_unregister(interaction){
     let userTag = interaction.user.tag;
     let userID = interaction.user.id;
+
     
     const row = new MessageActionRow()
             .addComponents(
@@ -43,6 +44,8 @@ async function command_unregister(interaction){
     let response = `Hello ${userTag}, are you sure you wish to delete your profile?`;
     interaction.reply({ content: response, ephemeral: true, components: [row] });
     const wait = require('util').promisify(setTimeout);
+
+
 }
 async function button_unregister(interaction) {
     await interaction.deferUpdate()

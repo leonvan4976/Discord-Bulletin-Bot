@@ -9,7 +9,6 @@ const { Sequelize } = require('sequelize');
 const deploy_commands = require("./deploy-commands.js");
 const event_handler = require("./event-handler.js");
 
-
 /*
   Code to login the bot onto the servers.
     client_obj:   a object of the Client class, the main hub for interacting with
@@ -24,42 +23,41 @@ const client_obj = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GU
 // This code is in deploy-commands.js
 deploy_commands.register_commands();
 
-// In response to a slash command.
+// Event handler
 client_obj.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()){ 
-        return;
-    }
+    // In response to a slash command.
+    if (interaction.isCommand()){ 
+        const { commandName } = interaction;
+        // The code for each event is in event-handler.js.
+        if (commandName === 'register') {
+            await event_handler.command_register(interaction);
+        } 
+        else if (commandName === 'unregister'){
+            await event_handler.command_unregister(client_obj,interaction);
+        }
+        else if (commandName === 'profile') {
+            // console.log('ghegeg'+interaction.options);
+            await event_handler.command_profile(client_obj,interaction);
+        }
+        else if (commandName === 'subscribe') {
+            await event_handler.command_subscribe(client_obj,interaction);
+        }
+        else if (commandName === 'unsubscribe') {
+            await event_handler.command_unsubscribe(client_obj,interaction);
+        }
 
-    const { commandName } = interaction;
-    
-    // The code for each event is in event-handler.js.
-    if (commandName === 'register') {
-        await event_handler.command_register(interaction);
-    } 
-    else if (commandName === 'unregister'){
-        await event_handler.command_unregister(interaction);
     }
-    else if (commandName === 'profile') {
-        // console.log('ghegeg'+interaction.options);
-        await event_handler.command_profile(client_obj,interaction);
+    // In response to a button.
+    else if (interaction.isButton()){
+        if(interaction.customId==='unregister') {
+            await event_handler.button_unregister(interaction);
+        }
     }
-    else if (commandName === 'subscribe') {
-        await event_handler.command_subscribe(client_obj,interaction);
-    }
-    else if (commandName === 'unsubscribe') {
-        await event_handler.command_unsubscribe(client_obj,interaction);
-    }
-});
-client_obj.on('interactionCreate', async interaction => {
-    if (!interaction.isButton()){ 
+    // Missing response to a select menu.
+    // If not a valid interaction.
+    else{
         return;
     }
-    const { customId } = interaction;
-    
-    // The code for each event is in event-handler.js.
-    if (customId === 'unregister') {
-        await event_handler.button_unregister(interaction);
-    } 
 });
 
 //This code logs in our bot.
