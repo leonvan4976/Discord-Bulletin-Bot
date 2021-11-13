@@ -55,7 +55,12 @@ client_obj.on('interactionCreate', async interaction => {
             await event_handler.button_unregister(interaction);
         }
     }
-    // Missing response to a select menu.
+    // In response to a select menu.
+    else if (interaction.isSelectMenu()){
+        if (interaction.customId==='subscribe'){
+            await event_handler.select_menu_subscribe(interaction);
+        }
+    }
     // If not a valid interaction.
     else{
         return;

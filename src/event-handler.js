@@ -17,7 +17,7 @@ async function command_register(interaction){
 
     const userRegistered = await isUserRegistered(userIdVar);
     if ( !userRegistered ) {
-        response = `Hello ${userTag}, your profile has been created successfully.\nYou can use the profile command to add/remove tags.`;
+        response = `Hello ${userTag}, your profile has been created successfully.\nYou can use the subscribe command to add/remove tags.`;
         Users.create({userId: userIdVar, userName: userTag});
         interaction.reply({content: response, ephemeral: true});
         return;
@@ -79,6 +79,7 @@ async function command_subscribe(client_obj, interaction) {
         interaction.reply({content: response, ephemeral: true});
         return;
     }
+    
     // *************this block is for dev use only, remove later *********************
     //create fake demo tags if you database havent been set up
     let demoTagsArr = ['cse101','cse130','cse140'];
@@ -96,38 +97,32 @@ async function command_subscribe(client_obj, interaction) {
     })
     .catch(console.error);
     // ****************************
+    
     const unsubscribeTags = await getUnsubscribedTags(userIdVar);
     if (unsubscribeTags.length===0) {
-        const response = `Hello ${userTag}, there is no new tag at this moment:).`;
+        const response = `Hello ${userTag}, there are no new tags at this moment :).`;
         interaction.reply({content: response, ephemeral: true});
         return;
     }
-    displayMenu(client_obj, interaction, "Select tags that you want to subscribe!", unsubscribeTags);
-    let componentId = `select${interaction.id}`;
-    client_obj.once('interactionCreate', async ddinteraction => {
-        if (!ddinteraction.isSelectMenu()) return;
-        // console.log(ddinteraction.user, ddinteraction.id, ddinteraction.component, componentId);
-        // Compare the component id retrieved by the drop-down interaction with the current component id
-        if (ddinteraction.customId === componentId) {
-            //console.log("Only the interaction component id associated with the msg's component id passes through!!")                                      
-            await ddinteraction.deferUpdate()                                     
+    displayMenu('subscribe', interaction, "Select tags that you want to subscribe!", unsubscribeTags);
+}
+async function select_menu_subscribe(interaction){
+    await interaction.deferUpdate()                                     
             .catch(console.error);
 
             //Get all tag names of chosen tags
-            let tagNameArr = await getTagNames(ddinteraction.values);
+            let tagNameArr = await getTagNames(interaction.values);
 
             //Delete message components                                    
-            await ddinteraction.editReply({content: 'you subscribed to tag: '+ tagNameArr, embeds: [], components: []})
-            .then((message) => ddinteraction.values)
+            await interaction.editReply({content: 'you subscribed to tag: '+ tagNameArr, embeds: [], components: []})
+            .then((message) => interaction.values)
             .catch(console.error);
-            if(ddinteraction.values){
+            if(interaction.values){
                 //ddintereation.values == arr of tagID the user selected
-                console.log('add id: '+userIdVar );
-                ddinteraction.values.map(id=>Subscriptions.create({userId: userIdVar, tagId: id})
+                console.log('add id: '+interaction.user.id );
+                interaction.values.map(id=>Subscriptions.create({userId: interaction.user.id, tagId: id})
                     .catch(err=>console.log('invalid user id or tag id')));
             }
-        }
-    })
 }
 
 // Let the user unsubscribe to tags
@@ -309,7 +304,7 @@ async function sendSubscribedPosts(client_obj, selectTagArr){
 }
 
 
-function displayMenu(client_obj, interaction, description, arrayToDisplay) {
+function displayMenu(ID, interaction, description, arrayToDisplay) {
     const tagEmbed = new MessageEmbed()
     .setColor('#0099ff') 
     .setTitle('Tags')
@@ -330,13 +325,13 @@ function displayMenu(client_obj, interaction, description, arrayToDisplay) {
         return optionsJSONArray;
     }
     //Append a unique slash command interaction id to the component custom id
-    let componentId = `select${interaction.id}`;
+    //let componentId = `select${interaction.id}`;
 
     //Create a tag dropdown menu
     function createDropDown(placeholder,tagsJSON){
         return new MessageActionRow().addComponents(
             new MessageSelectMenu()
-                .setCustomId(componentId)
+                .setCustomId(ID)
                 .setPlaceholder(placeholder)
                 .setMinValues(1)
                 .setMaxValues(arrayToDisplay.length)
@@ -452,4 +447,4 @@ async function getTagNames(constraint){
 
 // Exporting functions.
 // IF ADD OR REMOVE ANY FUNCTIONS, BE SURE TO MODIFY THIS LIST ACCORDINGLY.
-module.exports = { command_register, command_unregister, button_unregister, command_profile, command_subscribe, command_unsubscribe, command_post }
+module.exports = { command_register, command_unregister, button_unregister, command_profile, command_subscribe, select_menu_subscribe, command_unsubscribe, command_post }
