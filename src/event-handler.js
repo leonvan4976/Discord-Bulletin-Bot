@@ -220,10 +220,8 @@ async function command_post(client_obj, interaction){
     const tags = await Tags.findAll()
     .catch(err => console.error(err));
     displayMenu(client_obj, interaction, "Select which tags you wanna post to!", tags);
-
     //Append a unique slash command interaction id to the component custom id
     let componentId = `select${interaction.id}`;
-
     //Select Menu Interaction, ddinteraction=drop down interaction
     client_obj.once('interactionCreate', async ddinteraction => {
         if (!ddinteraction.isSelectMenu()) return;
@@ -234,7 +232,8 @@ async function command_post(client_obj, interaction){
             // Store post and tags to database
             let pId = await Posts.create({messageContent: message, userId: userID})
             .catch(err => { console.error('Invalid user id or tag id') });
-
+            const subscribedUsers = await getSubscribedUsers(ddinteraction.values);
+            await sendDMToUsers(client_obj, subscribedUsers, message);
             // Save chosen tags
             for(let tag of ddinteraction.values){
                 // Find the post tag's tag name from database using the tagId
@@ -260,7 +259,7 @@ async function command_post(client_obj, interaction){
             .catch(console.error);
             
             // Pull subscriptions
-            await sendSubscribedPosts(client_obj, ddinteraction.values);
+            // await sendSubscribedPosts(client_obj, ddinteraction.values);
 
 
         }
@@ -447,6 +446,38 @@ async function getTagNames(constraint){
     })
     .catch(err => console.error(err));
     return nameTags.map(nT => nT.tagName);
+}
+
+async function getSubscribedUsers(tagsArray){
+    //Get all tag names of chosen tags
+    const userSet = new Set();
+    const users = await Subscriptions.findAll({
+        attributes: ['userId'],
+        where: { tagId: tagsArray }
+    })
+    .catch(err => console.error(err));
+    console.log(users[1].dataValues.userId);
+    users.forEach(user => {
+        console.log(user.dataValues.userId+'add')
+        userSet.add(user.dataValues.userId)
+    });
+    return Array.from(userSet);
+}
+
+// async function sendDMToUser(client_obj, userId, message) {
+//     const user = client_obj.users.cache.get(userId);
+//     console.log(user+'user');
+//     await user.send(message);
+// }
+
+async function sendDMToUsers(client_obj, userIDArray, message) {
+    console.log(userIDArray);
+    userIDArray.map(async userId=> {
+        const user = await client_obj.users.fetch(userId);
+        console.log(user+'user')
+        if(user!==undefined)
+            await user.send(message);
+    })
 }
 
 
