@@ -40,7 +40,7 @@ client_obj.on('interactionCreate', async interaction => {
             await event_handler.command_profile(client_obj,interaction);
         }
         else if (commandName === 'subscribe') {
-            await event_handler.command_subscribe(client_obj,interaction);
+            await event_handler.command_subscribe(interaction);
         }
         else if (commandName === 'unsubscribe') {
             await event_handler.command_unsubscribe(client_obj,interaction);

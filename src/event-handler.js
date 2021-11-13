@@ -69,7 +69,7 @@ function command_profile(client_obj, interaction){
 
 
 // Let the user subscribe to tags
-async function command_subscribe(client_obj, interaction) {
+async function command_subscribe(interaction) {
     const getAllTagsFromDB = ['1','2','3','4','5'];
     let userTag = interaction.user.tag;
     let userIdVar = interaction.user.id;
