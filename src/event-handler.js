@@ -304,15 +304,7 @@ async function sendSubscribedPosts(client_obj, selectTagArr){
 }
 
 
-function displayMenu(ID, interaction, description, arrayToDisplay) {
-    const tagEmbed = new MessageEmbed()
-    .setColor('#0099ff') 
-    .setTitle('Tags')
-    .setAuthor(interaction.user.tag + "'s User Profile")
-    .setDescription(description)
-    .setTimestamp();
-
-    
+function displayMenu(ID ,interaction, description, arrayToDisplay) {
     //TODO: will import a list of tagas from database
     //just a demo tags list for now
     // let demoTagsArr = ['cse101','cse130','cse140'];
@@ -324,8 +316,6 @@ function displayMenu(ID, interaction, description, arrayToDisplay) {
         })
         return optionsJSONArray;
     }
-    //Append a unique slash command interaction id to the component custom id
-    //let componentId = `select${interaction.id}`;
 
     //Create a tag dropdown menu
     function createDropDown(placeholder,tagsJSON){
@@ -340,8 +330,8 @@ function displayMenu(ID, interaction, description, arrayToDisplay) {
     }
     //Have the bot send a channel message with the user profile and select menu
     // Made this reply ephemeral to not spam the chat
-    interaction.reply({embeds: [tagEmbed], components: [createDropDown('Please select a tag',arrayToJSON())], ephemeral: true})
-        .then(() => console.log(`Replied to message "${interaction.commandName}"`))
+    interaction.reply({content: description, components: [createDropDown("Select Tag",arrayToJSON())], ephemeral: true})
+        .then(() => console.log(`Replied to message ${interaction.commandName}`))
         .catch(console.error);
 
     const wait = require('util').promisify(setTimeout);
