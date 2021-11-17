@@ -17,7 +17,7 @@ async function command_register(interaction){
 
     const userRegistered = await isUserRegistered(userIdVar);
     if ( !userRegistered ) {
-        response = `Hello ${userTag}, your profile has been created successfully.\nYou can use the profile command to add/remove tags.`;
+        response = `Hello ${userTag}, your profile has been created successfully.\nYou can use the subscribe command to add/remove tags.`;
         Users.create({userId: userIdVar, userName: userTag});
         interaction.reply({content: response, ephemeral: true});
         return;
@@ -53,7 +53,6 @@ async function button_unregister(interaction) {
             userId: interaction.user.id
         }
     });
-    console.log(index);
     if (index == 0) {
         reply = "You are not a registered user."
     } else {
@@ -64,12 +63,12 @@ async function button_unregister(interaction) {
 
 // Responds with user profile.
 function command_profile(client_obj, interaction){
-    displayMenu(client_obj,interaction, 'Here\'s a list of what you subscribed.',['1','2','3']);
+    displayMenu(interaction, 'Here\'s a list of what you subscribed.',['1','2','3']);
 }
 
 
 // Let the user subscribe to tags
-async function command_subscribe(client_obj, interaction) {
+async function command_subscribe(interaction) {
     const getAllTagsFromDB = ['1','2','3','4','5'];
     let userTag = interaction.user.tag;
     let userIdVar = interaction.user.id;
@@ -79,6 +78,7 @@ async function command_subscribe(client_obj, interaction) {
         interaction.reply({content: response, ephemeral: true});
         return;
     }
+    
     // *************this block is for dev use only, remove later *********************
     //create fake demo tags if you database havent been set up
     let demoTagsArr = ['cse101','cse130','cse140'];
@@ -96,42 +96,36 @@ async function command_subscribe(client_obj, interaction) {
     })
     .catch(console.error);
     // ****************************
+    
     const unsubscribeTags = await getUnsubscribedTags(userIdVar);
     if (unsubscribeTags.length===0) {
-        const response = `Hello ${userTag}, there is no new tag at this moment:).`;
+        const response = `Hello ${userTag}, there are no new tags at this moment :).`;
         interaction.reply({content: response, ephemeral: true});
         return;
     }
-    displayMenu(client_obj, interaction, "Select tags that you want to subscribe!", unsubscribeTags);
-    let componentId = `select${interaction.id}`;
-    client_obj.once('interactionCreate', async ddinteraction => {
-        if (!ddinteraction.isSelectMenu()) return;
-        // console.log(ddinteraction.user, ddinteraction.id, ddinteraction.component, componentId);
-        // Compare the component id retrieved by the drop-down interaction with the current component id
-        if (ddinteraction.customId === componentId) {
-            //console.log("Only the interaction component id associated with the msg's component id passes through!!")                                      
-            await ddinteraction.deferUpdate()                                     
+    displayMenu('subscribe', interaction, "Select tags that you want to subscribe!", unsubscribeTags);
+}
+async function select_menu_subscribe(interaction){
+    await interaction.deferUpdate()                                     
             .catch(console.error);
 
             //Get all tag names of chosen tags
-            let tagNameArr = await getTagNames(ddinteraction.values);
+            let tagNameArr = await getTagNames(interaction.values);
 
             //Delete message components                                    
-            await ddinteraction.editReply({content: 'you subscribed to tag: '+ tagNameArr, embeds: [], components: []})
-            .then((message) => ddinteraction.values)
+            await interaction.editReply({content: 'you subscribed to tag: '+ tagNameArr, embeds: [], components: []})
+            .then((message) => interaction.values)
             .catch(console.error);
-            if(ddinteraction.values){
+            if(interaction.values){
                 //ddintereation.values == arr of tagID the user selected
-                console.log('add id: '+userIdVar );
-                ddinteraction.values.map(id=>Subscriptions.create({userId: userIdVar, tagId: id})
+                console.log('add id: '+interaction.user.id );
+                interaction.values.map(id=>Subscriptions.create({userId: interaction.user.id, tagId: id})
                     .catch(err=>console.log('invalid user id or tag id')));
             }
-        }
-    })
 }
 
 // Let the user unsubscribe to tags
-async function command_unsubscribe(client_obj, interaction) {
+async function command_unsubscribe(interaction) {
     let userTag = interaction.user.tag;
     let userIdVar = interaction.user.id;
     const userRegistered = await isUserRegistered(userIdVar);
@@ -146,42 +140,32 @@ async function command_unsubscribe(client_obj, interaction) {
         interaction.reply({content: response, ephemeral: true});
         return;
     }
-    displayMenu(client_obj, interaction, "Select tags you want to unsubscribe!", subscribedtags);
-    //Append a unique slash command interaction id to the component custom id
-    let componentId = `select${interaction.id}`;
-    client_obj.once('interactionCreate', async ddinteraction => {
-        if (!ddinteraction.isSelectMenu()) return;
-        // console.log(ddinteraction.user, ddinteraction.id, ddinteraction.component, componentId);
-        // Compare the component id retrieved by the drop-down interaction with the current component id
-        if (ddinteraction.customId === componentId) {
-            //console.log("Only the interaction component id associated with the msg's component id passes through!!")                                      
-            await ddinteraction.deferUpdate()                                     
-            .catch(console.error);
-
-            //Get all tag names of chosen tags
-            let tagNameArr = await getTagNames(ddinteraction.values);
-
-
-            //Delete message components                                    
-            await ddinteraction.editReply({content: 'you subscribed to tag: '+ tagNameArr, embeds: [], components: []})
-            .then((message) => ddinteraction.values)
-            .catch(console.error);
-            if(ddinteraction.values){
-                //ddintereation.values == arr of tagID the user selected
-                console.log('add id: '+userIdVar );
-                ddinteraction.values.map(id=>{
-                    Subscriptions.findOne({
-                        where: {userId: userIdVar, tagId: id}
-                    })
-                    .then(sub=> sub.destroy())
-                    .catch('User tag: '+userTag+' failed to unsubscribe tag id: '+id)
-                })
-            }
-        }
-    })
-    
+    displayMenu("unsubscribe", interaction, "Select tags you want to unsubscribe!", subscribedtags);
 }
-
+async function selectMenu_unsubscribe(interaction) {
+    let userTag = interaction.user.tag;
+    let userIdVar = interaction.user.id;
+    await interaction.deferUpdate().catch(console.error);
+    //Get all tag names of chosen tags
+    let tagNameArr = await getTagNames(interaction.values);
+    //Delete message components                                    
+    await interaction.editReply({content: 'you unsubscribed to tag: '+ tagNameArr, embeds: [], components: []})
+        .then((message) => interaction.values)
+        .catch(console.error);
+    
+    if(interaction.values){
+        //ddintereation.values == arr of tagID the user selected
+        userIdVar
+        interaction.values.map(id=>{
+            Subscriptions.findOne({
+                where: {userId: userIdVar, tagId: id}
+            })
+            .then(sub=> sub.destroy())
+            .catch('User tag: '+userTag+' failed to unsubscribe tag id: '+id)
+        })
+    }
+    return;
+}
 // Save a message to the database with its associated tags and send the message to all subscribers
 async function command_post(client_obj, interaction){
     let userTag = interaction.user.tag;
@@ -219,7 +203,8 @@ async function command_post(client_obj, interaction){
 
     const tags = await Tags.findAll()
     .catch(err => console.error(err));
-    displayMenu(client_obj, interaction, "Select which tags you wanna post to!", tags);
+    displayMenu(interaction, "Select which tags you wanna post to!", tags);
+
     //Append a unique slash command interaction id to the component custom id
     let componentId = `select${interaction.id}`;
     //Select Menu Interaction, ddinteraction=drop down interaction
@@ -272,6 +257,7 @@ async function command_post(client_obj, interaction){
 // helper functions
 
 // DMs all subscribed users of the tags in selectTagArr
+// TODO: NO MORE CLIENT_OBJ, USE INTERATION.user.id
 async function sendSubscribedPosts(client_obj, selectTagArr){
     for(let tag of selectTagArr){
         let subbedTags = await Subscriptions.findAll({ where: { tagId: tag } })
@@ -297,26 +283,16 @@ async function sendSubscribedPosts(client_obj, selectTagArr){
                     user.send(p.messageContent);
 
                 })
-
                 //Destroy sent posts from database
                 // await Posts.destroy({ where: { id: sP.postId } })
                 // .catch(err => console.error(err));
             }
         }
-
     }
 }
 
 
-function displayMenu(client_obj, interaction, description, arrayToDisplay) {
-    const tagEmbed = new MessageEmbed()
-    .setColor('#0099ff') 
-    .setTitle('Tags')
-    .setAuthor(interaction.user.tag + "'s User Profile")
-    .setDescription(description)
-    .setTimestamp();
-
-    
+function displayMenu(ID ,interaction, description, arrayToDisplay) {
     //TODO: will import a list of tagas from database
     //just a demo tags list for now
     // let demoTagsArr = ['cse101','cse130','cse140'];
@@ -328,14 +304,12 @@ function displayMenu(client_obj, interaction, description, arrayToDisplay) {
         })
         return optionsJSONArray;
     }
-    //Append a unique slash command interaction id to the component custom id
-    let componentId = `select${interaction.id}`;
 
     //Create a tag dropdown menu
     function createDropDown(placeholder,tagsJSON){
         return new MessageActionRow().addComponents(
             new MessageSelectMenu()
-                .setCustomId(componentId)
+                .setCustomId(ID)
                 .setPlaceholder(placeholder)
                 .setMinValues(1)
                 .setMaxValues(arrayToDisplay.length)
@@ -344,8 +318,9 @@ function displayMenu(client_obj, interaction, description, arrayToDisplay) {
     }
     //Have the bot send a channel message with the user profile and select menu
     // Made this reply ephemeral to not spam the chat
-    interaction.reply({embeds: [tagEmbed], components: [createDropDown('Please select a tag',arrayToJSON())], ephemeral: true})
-        .then(() => console.log(`Replied to message "${interaction.commandName}"`))
+    interaction.reply({content: description, components: [createDropDown("Select Tag",arrayToJSON())], ephemeral: true})
+
+        .then(() => console.log(`Replied to message ${interaction.commandName}`))
         .catch(console.error);
 
     const wait = require('util').promisify(setTimeout);
@@ -483,4 +458,14 @@ async function sendDMToUsers(client_obj, userIDArray, message) {
 
 // Exporting functions.
 // IF ADD OR REMOVE ANY FUNCTIONS, BE SURE TO MODIFY THIS LIST ACCORDINGLY.
-module.exports = { command_register, command_unregister, button_unregister, command_profile, command_subscribe, command_unsubscribe, command_post }
+module.exports = {
+    command_register,
+    command_unregister,
+    button_unregister,
+    command_profile,
+    command_subscribe,
+    select_menu_subscribe,
+    command_unsubscribe,
+    selectMenu_unsubscribe,
+    command_post
+}
