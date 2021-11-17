@@ -40,7 +40,7 @@ client_obj.on('interactionCreate', async interaction => {
             await event_handler.command_profile(client_obj,interaction);
         }
         else if (commandName === 'subscribe') {
-            await event_handler.command_subscribe(client_obj,interaction);
+            await event_handler.command_subscribe(interaction);
         }
         else if (commandName === 'unsubscribe') {
             await event_handler.command_unsubscribe(client_obj,interaction);
@@ -55,7 +55,12 @@ client_obj.on('interactionCreate', async interaction => {
             await event_handler.button_unregister(interaction);
         }
     }
-    // Missing response to a select menu.
+    // In response to a select menu.
+    else if (interaction.isSelectMenu()){
+        if (interaction.customId==='subscribe'){
+            await event_handler.select_menu_subscribe(interaction);
+        }
+    }
     // If not a valid interaction.
     else if (interaction.isSelectMenu()) {
         if (interaction.customId === 'unsubscribe') {
