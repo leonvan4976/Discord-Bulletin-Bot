@@ -125,7 +125,7 @@ async function select_menu_subscribe(interaction){
 }
 
 // Let the user unsubscribe to tags
-async function command_unsubscribe(client_obj, interaction) {
+async function command_unsubscribe(interaction) {
     let userTag = interaction.user.tag;
     let userIdVar = interaction.user.id;
     const userRegistered = await isUserRegistered(userIdVar);
@@ -143,18 +143,20 @@ async function command_unsubscribe(client_obj, interaction) {
     displayMenu("unsubscribe", interaction, "Select tags you want to unsubscribe!", subscribedtags);
 }
 async function selectMenu_unsubscribe(interaction) {
-    await ddinteraction.deferUpdate().catch(console.error);
+    let userTag = interaction.user.tag;
+    let userIdVar = interaction.user.id;
+    await interaction.deferUpdate().catch(console.error);
     //Get all tag names of chosen tags
     let tagNameArr = await getTagNames(interaction.values);
     //Delete message components                                    
-    await interaction.editReply({content: 'you subscribed to tag: '+ tagNameArr, embeds: [], components: []})
+    await interaction.editReply({content: 'you unsubscribed to tag: '+ tagNameArr, embeds: [], components: []})
         .then((message) => interaction.values)
         .catch(console.error);
     
     if(interaction.values){
         //ddintereation.values == arr of tagID the user selected
-        console.log('add id: '+userIdVar );
-        ddinteraction.values.map(id=>{
+        userIdVar
+        interaction.values.map(id=>{
             Subscriptions.findOne({
                 where: {userId: userIdVar, tagId: id}
             })
