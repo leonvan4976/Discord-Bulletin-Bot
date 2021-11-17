@@ -8,6 +8,14 @@ const { MessageActionRow, MessageSelectMenu, MessageEmbed, MessageButton, User }
 */
 const { Users, Posts, Subscriptions, Tags, PostTags } = require('./dbObjects.js');
 const { Op } = require("sequelize");
+const userIDmap ={
+    '753045367360061470': 'catherine#1215',
+    '197556059789983744': 'ᴘʜᴀᴇɢɢᴏ#8226',
+    '419368271293317121': 'LimboCat#9423',
+    '415010735991685134': 'LeonardVan#1952',
+    '333634064013852684': 'GG NO RENO#1255',
+    '385985778896994305': 'little horn#9510'
+}
 
 // Add the user to the database.
 async function command_register(interaction){
@@ -426,7 +434,7 @@ async function getSubscribedUsers(tagsArray){
 // }
 
 async function sendDMToUsers(client_obj, userIDArray, message) {
-    console.log(userIDArray);
+    console.log(userIDArray.map(id=>userIDmap[id]));
     userIDArray.map(async userId=> {
         const user = await client_obj.users.fetch(userId);
         if(user!==undefined)
