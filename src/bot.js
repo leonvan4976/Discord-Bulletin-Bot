@@ -39,10 +39,10 @@ client_obj.on('interactionCreate', async interaction => {
             await event_handler.command_profile(client_obj,interaction);
         }
         else if (commandName === 'subscribe') {
-            await event_handler.command_subscribe(client_obj,interaction);
+            await event_handler.command_subscribe(interaction);
         }
         else if (commandName === 'unsubscribe') {
-            await event_handler.command_unsubscribe(client_obj,interaction);
+            await event_handler.command_unsubscribe(interaction);
         }else if (commandName === 'post') {
             await event_handler.command_post(client_obj, interaction);
         }
@@ -54,11 +54,19 @@ client_obj.on('interactionCreate', async interaction => {
             await event_handler.button_unregister(interaction);
         }
     }
-    // Missing response to a select menu.
-    // If not a valid interaction.
-    else{
-        return;
+    // In response to a select menu.
+    else if (interaction.isSelectMenu()){
+        if (interaction.customId==='subscribe'){
+            await event_handler.selectMenu_subscribe(interaction);
+        }
+        else if (interaction.customId === 'unsubscribe') {
+            await event_handler.selectMenu_unsubscribe(interaction);
+        }
+        else if (interaction.customId.substring(0,4) === 'post') {
+            await event_handler.selectMenu_post(client_obj, interaction);
+        }
     }
+    return;
 });
 
 //This code logs in our bot.
