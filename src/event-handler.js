@@ -76,8 +76,45 @@ async function button_unregister(interaction) {
 }
 
 // Responds with user profile.
-function command_profile(client_obj, interaction){
-    displayMenu(interaction, 'Here\'s a list of what you subscribed.',['1','2','3']);
+
+async function command_profile(client_obj, interaction){
+    let userTag = interaction.user.tag;
+    let userIdVar = interaction.user.id;
+    const userRegistered = await isUserRegistered(userIdVar);
+    if ( !userRegistered ) {
+        const response = `Hello ${userTag}, you have not registered yet. Use /register to register`;
+        interaction.reply({content: response, ephemeral: true});
+        return;
+    }
+    const subscribedtags = await getSubscribedTags(userIdVar);
+    if (subscribedtags.length===0) {
+        const response = `Hello ${userTag}, you have not subscribe to any tag yet. Use /subscribe to subscribe`;
+        interaction.reply({content: response, ephemeral: true});
+        return;
+    }
+
+    //console.log(subscribedtags);
+    //Create a tag list to fit in the addFields attribute of ProfileEmbed
+    var tags_list = [];
+    for (let index of subscribedtags){
+        console.log(index.tagName);
+        tags_list.push({name: '• ' + index.tagName, value: 'Description of ' + index.tagName});
+    }
+
+    //Generate a random color for the profile
+    var randomColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+    //Custom embed to display the user profile
+    const ProfileEmbed = new MessageEmbed()
+        //.setColor('#0099ff') 
+        .setColor(randomColor)
+        .setTitle('Tags')
+        .setAuthor(interaction.user.username + "'s User Profile", interaction.user.displayAvatarURL())
+        .setDescription('Here\'s a list of what you subscribed:')
+        .setTimestamp()
+        .addFields(tags_list)
+        
+    
+    interaction.reply({embeds: [ProfileEmbed], components: [], ephemeral: true});
 }
 
 
