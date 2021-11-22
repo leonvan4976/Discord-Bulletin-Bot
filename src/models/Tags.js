@@ -19,6 +19,9 @@ module.exports = (sequelize, DataTypes) => {
         tagName : {
             type: DataTypes.TEXT,
             unique: true,
+        },
+        tagDescription : {
+            type: DataTypes.TEXT,
         }
     })
 };
