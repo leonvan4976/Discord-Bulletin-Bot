@@ -16,7 +16,8 @@ async function insertTag(dataRow){
         // Updates the description of the tag
         await Tags.update(
             {
-                tagDescription : dataRow.tagDescription
+                tagDescription : dataRow.tagDescription,
+                tagEmoji: dataRow.tagEmoji,
             },
             {
                 where:{
@@ -31,6 +32,7 @@ async function insertTag(dataRow){
         await Tags.create({ 
             tagName: dataRow.tagName,
             tagDescription: dataRow.tagDescription,
+            tagEmoji: dataRow.tagEmoji,
         });
         return;
     }

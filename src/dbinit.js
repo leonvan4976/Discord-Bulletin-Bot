@@ -5,6 +5,9 @@ const sequelize = new Sequelize('database', 'username', 'password', {
 	dialect: 'sqlite',
 	logging: false,
 	storage: 'database.sqlite',
+	dialectOptions: {
+		charset: 'utf8mb4',
+	}
 });
 
 // Set up tables in database
