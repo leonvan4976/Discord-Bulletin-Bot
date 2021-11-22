@@ -22,6 +22,9 @@ module.exports = (sequelize, DataTypes) => {
         },
         tagDescription : {
             type: DataTypes.TEXT,
+        },
+        tagEmoji:{
+            type: DataTypes.TEXT,
         }
     })
 };
