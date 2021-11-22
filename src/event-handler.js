@@ -326,9 +326,21 @@ function displayMenu(ID ,interaction, description, arrayToDisplay) {
     //just a demo tags list for now
     // let demoTagsArr = ['cse101','cse130','cse140'];
     //tagsTOJSON() returns a list of options objects, we can just .addOptions(tagsToJSON())later
+
+    function compare(x, y){
+        if(x.tagName < y.tagName){
+            return -1;
+        }
+        if(x.tagName > y.tagName){
+            return 1;
+        }
+        return 0;
+    }
+
     function arrayToJSON() {
         let optionsJSONArray = []
-        arrayToDisplay.map((eachTag)=> {
+        sortedArray = arrayToDisplay.sort(compare);
+        sortedArray.map((eachTag)=> {
             optionsJSONArray.push({label: eachTag.tagName.toString(), value: eachTag.id.toString()})
         })
         return optionsJSONArray;
@@ -341,7 +353,7 @@ function displayMenu(ID ,interaction, description, arrayToDisplay) {
                 .setCustomId(ID)
                 .setPlaceholder(placeholder)
                 .setMinValues(1)
-                .setMaxValues(arrayToDisplay.length)
+                .setMaxValues(sortedArray.length)
                 .addOptions(tagsJSON)
         )
     }
