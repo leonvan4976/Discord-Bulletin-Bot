@@ -242,13 +242,13 @@ async function command_post(client_obj, interaction){
 }
 
 async function selectMenu_post(client_obj, interaction) {
-    let userTag = interaction.user.tag;
+    let authorTag = interaction.user.tag;
     let userIdVar = interaction.user.id;
     await interaction.deferUpdate().catch(console.error);
     //Get all tag names of chosen tags
     let tagNameArr = await getTagNames(interaction.values);
     message = interaction.customId.substring(5);
-    console.log(userTag+' posted '+message);
+    console.log(authorTag+' posted '+message);
     //Delete message components                                    
     await interaction.editReply({content: 'you posted \''+message+'\' to tag: '+ tagNameArr, embeds: [], components: []})
         .then((message) => interaction.values)
@@ -260,7 +260,8 @@ async function selectMenu_post(client_obj, interaction) {
         let pId = await Posts.create({messageContent: message, userId: userIdVar})
         .catch(err => { console.error('Invalid user id or tag id') });
         const subscribedUsers = await getSubscribedUsers(interaction.values);
-        await sendDMToUsers(client_obj, subscribedUsers, message);
+        const subscribersAndTags = await getSubscribedUsersAndTags(interaction.values);
+        await sendDMToUsers(client_obj, subscribedUsers, subscribersAndTags, message, authorTag);
         // Save chosen tags
         for(let tag of interaction.values){
             // Find the post tag's tag name from database using the tagId
@@ -504,18 +505,73 @@ async function getSubscribedUsers(tagsArray){
     return Array.from(userSet);
 }
 
+// get the users who subscribed to the tags and specificly which tags they subscribed
+async function getSubscribedUsersAndTags(tagsArray){
+    //Get all tag names of chosen tags
+    const userMap = {};
+    const users = await Subscriptions.findAll({
+        attributes: ['userId','tagId'],
+        where: { tagId: tagsArray }
+    })
+    .catch(err => console.error(err));
+    users.forEach(user => {
+        if(userMap[user.dataValues.userId]) {
+            try{
+                userMap[user.dataValues.userId].push(user.dataValues.tagId);
+            }catch(err) {
+                console.log('err: '+ userMap[user.dataValues.userId])
+            }
+            
+        } else {
+            userMap[user.dataValues.userId] = [user.dataValues.tagId];
+        }
+    });
+    return userMap;
+}
+
+async function getUsername(userid){
+    const user = await Users.findOne({
+        attributes: ['userName'],
+        where: { userId: userid }
+    })
+    .catch(err => console.error(err));
+    return user.userName;
+}
+
+// take an array of user ids and return an array of usernames
+async function getUsernames(userIds) {
+    const users = await Users.findAll({
+        attributes: ['userName'],
+        where: { userId: userIds }
+    })
+    .catch(err => console.error(err));
+    return users.map(user=>user.userName);
+}
+
 // async function sendDMToUser(client_obj, userId, message) {
 //     const user = client_obj.users.cache.get(userId);
 //     console.log(user+'user');
 //     await user.send(message);
 // }
 
-async function sendDMToUsers(client_obj, userIDArray, message) {
-    console.log(userIDArray.map(id=>userIDmap[id]));
+async function sendDMToUsers(client_obj, userIDArray, usersTags, message, authorTag) {
+    // console.log(userIDArray.map(async id=>await getUsername(id)));
+    console.log(await getUsernames(userIDArray));
     userIDArray.map(async userId=> {
         const user = await client_obj.users.fetch(userId);
+        const userSubscribedTags = await getTagNames(usersTags[userId]);
+        var randomColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+        const ProfileEmbed = new MessageEmbed()
+            .setColor(randomColor)
+            .setTitle(userSubscribedTags.toString())
+            .setAuthor('Annocement from '+authorTag)
+            .setDescription(message)
+            .setTimestamp()
+            // .addFields(tags_list)
         if(user!==undefined)
-            await user.send(message);
+            // interaction.reply({embeds: [ProfileEmbed], components: [], ephemeral: true});
+            await user.send({embeds: [ProfileEmbed], components: [], ephemeral: true});
+            // await user.send(message)
     })
 }
 
