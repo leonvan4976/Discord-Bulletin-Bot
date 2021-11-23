@@ -98,7 +98,7 @@ async function command_profile(client_obj, interaction){
     var tags_list = [];
     for (let index of subscribedtags){
         console.log(index.tagName);
-        tags_list.push({name: '• ' + index.tagName, value: 'Description of ' + index.tagName});
+        tags_list.push({name: index.tagEmoji + index.tagName, value: '-'+index.tagDescription});
     }
 
     //Generate a random color for the profile
