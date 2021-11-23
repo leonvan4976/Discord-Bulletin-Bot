@@ -98,7 +98,7 @@ async function command_profile(client_obj, interaction){
     var tags_list = [];
     for (let index of subscribedtags){
         console.log(index.tagName);
-        tags_list.push({name: '• ' + index.tagName, value: 'Description of ' + index.tagName});
+        tags_list.push({name: index.tagEmoji + index.tagName, value: '-'+index.tagDescription});
     }
 
     //Generate a random color for the profile
@@ -341,7 +341,7 @@ function displayMenu(ID ,interaction, description, arrayToDisplay) {
         let optionsJSONArray = []
         sortedArray = arrayToDisplay.sort(compare);
         sortedArray.map((eachTag)=> {
-            optionsJSONArray.push({label: eachTag.tagName.toString(), value: eachTag.id.toString()})
+            optionsJSONArray.push({label: eachTag.tagName.toString(), emoji: eachTag.tagEmoji, value: eachTag.id.toString()})
         })
         return optionsJSONArray;
     }
@@ -399,8 +399,7 @@ async function getSubscribedTags(userId) {
             console.log(user+' has an error while getting the subscription')
         });
     for(const sub of subscriptions) {
-        const name = await getOneTagName(sub.tagId);
-        const obj = {tagName: name, id: sub.tagId};
+        const obj = await getOneTag(sub.tagId);
         tags.push(obj);
     }
     return tags;
@@ -437,6 +436,21 @@ async function getAllTags() {
     return tags;
 }
 
+// async function getTagsWithIds(tagIds) {
+//     const tag = await Tags.findOne({
+//         attributes: ['tagName'],
+//         where: { id: tagId }
+//         })
+//         .catch(err=>{
+//             console.log('error occurs when searching this tag id: '+tagId)
+//         });
+//     if(tag && tag.tagName){
+//         return tag.tagName;
+//     }else{
+//         return 'tagName of '+tagId+' is undefined';
+//     }
+// }
+
 async function getOneTagName(tagId) {
     const tag = await Tags.findOne({
         attributes: ['tagName'],
@@ -449,6 +463,20 @@ async function getOneTagName(tagId) {
         return tag.tagName;
     }else{
         return 'tagName of '+tagId+' is undefined';
+    }
+}
+
+async function getOneTag(tagId) {
+    const tag = await Tags.findOne({
+        where: { id: tagId }
+        })
+        .catch(err=>{
+            console.log('error occurs when searching this tag id: '+tagId)
+        });
+    if(tag && tag.tagName){
+        return tag;
+    }else{
+        return 'tag of '+tagId+' is undefined';
     }
 }
 
