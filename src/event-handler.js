@@ -334,14 +334,12 @@ function displayMenu(ID ,interaction, description, arrayToDisplay) {
 // Check if initial tags were added to the database
 // Returns true if there are no tags found; Returns false if there are tags in the database
 async function checkInitialTagsInDatabase(){
-    const noTags = true;
-    Tags.findAndCountAll()
-    .then((result)=> {
-        if(result.count !== 0){
-           noTags = false;
-        }
-    })
-    .catch(console.error);
+    var noTags = true;
+    let result = await Tags.findAndCountAll()
+    .catch(e => console.error(e));
+    if(result.count !== 0){
+        noTags = false;
+    }
     return noTags;
 }
 
