@@ -76,7 +76,6 @@ async function button_unregister(interaction) {
 }
 
 // Responds with user profile.
-
 async function command_profile(client_obj, interaction){
     let userTag = interaction.user.tag;
     let userIdVar = interaction.user.id;
@@ -94,16 +93,16 @@ async function command_profile(client_obj, interaction){
     }
 
     //console.log(subscribedtags);
-    //Create a tag list to fit in the addFields attribute of ProfileEmbed
+    // Create a tag list to fit in the addFields attribute of ProfileEmbed
     var tags_list = [];
     for (let index of subscribedtags){
         console.log(index.tagName);
         tags_list.push({name: index.tagEmoji + index.tagName, value: '-'+index.tagDescription});
     }
 
-    //Generate a random color for the profile
+    // Generate a random color for the profile
     var randomColor = '#'+Math.floor(Math.random()*16777215).toString(16);
-    //Custom embed to display the user profile
+    // Custom embed to display the user profile
     const ProfileEmbed = new MessageEmbed()
         //.setColor('#0099ff') 
         .setColor(randomColor)
@@ -129,24 +128,14 @@ async function command_subscribe(interaction) {
         interaction.reply({content: response, ephemeral: true});
         return;
     }
-    
-    // *************this block is for dev use only, remove later *********************
-    //create fake demo tags if you database havent been set up
-    let demoTagsArr = ['cse101','cse130','cse140'];
-    // Check if there are already tags in the database
-    Tags.findAndCountAll()
-    .then((result)=> {
-        if(result.count === 0){
-            // console.log(result);
-            for(const [i, name] of demoTagsArr.entries()){
-                // Temporarily add tags to database
-                Tags.create({id: i, tagName: name});
-                // console.log('Tag created!')
-            }
-        }
-    })
-    .catch(console.error);
-    // ****************************
+
+    const noTags = await checkInitialTagsInDatabase()
+    .catch(e => console.error(e));
+    if(noTags){
+        const response = `Error! There are no tags to even subscribe to. Please consult your discord moderators!`;
+        interaction.reply({content: response, ephemeral: true});
+        return;
+    }
     
     const unsubscribeTags = await getUnsubscribedTags(userIdVar);
     if (unsubscribeTags.length===0) {
@@ -156,6 +145,7 @@ async function command_subscribe(interaction) {
     }
     displayMenu('subscribe', interaction, "Select tags that you want to subscribe!", unsubscribeTags);
 }
+
 async function selectMenu_subscribe(interaction){
     let userTag = interaction.user.tag;
     let userIdVar = interaction.user.id;
@@ -163,10 +153,10 @@ async function selectMenu_subscribe(interaction){
     await interaction.deferUpdate()                                     
         .catch(console.error);
 
-        //Get all tag names of chosen tags
+        // Get all tag names of chosen tags
         let tagNameArr = await getTagNames(interaction.values);
         console.log(userTag+' subscribed to '+tagNameArr);
-        //Delete message components                                    
+        // Delete message components                                    
         await interaction.editReply({content: 'you subscribed to tag: '+ tagNameArr, embeds: [], components: []})
         .then((message) => interaction.values)
         .catch(console.error);
@@ -188,6 +178,13 @@ async function command_unsubscribe(interaction) {
         interaction.reply({content: response, ephemeral: true});
         return;
     }
+    const noTags = await checkInitialTagsInDatabase()
+    .catch(e => console.error(e));
+    if(noTags){
+        const response = `Error! There are no tags to even unsubscribe to. Please consult your discord moderators!`;
+        interaction.reply({content: response, ephemeral: true});
+        return;
+    }
     const subscribedtags = await getSubscribedTags(userIdVar);
     if (subscribedtags.length===0) {
         const response = `Hello ${userTag}, you have not subscribe to any tag yet. Use /subscribe to subscribe`;
@@ -201,10 +198,10 @@ async function selectMenu_unsubscribe(interaction) {
     let userTag = interaction.user.tag;
     let userIdVar = interaction.user.id;
     await interaction.deferUpdate().catch(console.error);
-    //Get all tag names of chosen tags
+    // Get all tag names of chosen tags
     let tagNameArr = await getTagNames(interaction.values);
     console.log(userTag+' unsubscribed to '+tagNameArr)
-    //Delete message components                                    
+    // Delete message components                                    
     await interaction.editReply({content: 'you unsubscribed to tag: '+ tagNameArr, embeds: [], components: []})
         .then((message) => interaction.values)
         .catch(console.error);
@@ -236,6 +233,13 @@ async function command_post(client_obj, interaction){
         interaction.reply({content: response, ephemeral: true});
         return;
     }
+    const noTags = await checkInitialTagsInDatabase()
+    .catch(e => console.error(e));
+    if(noTags){
+        const response = `Error! There are no tags to even post with. Please consult your discord moderators!`;
+        interaction.reply({content: response, ephemeral: true});
+        return;
+    }
     const tags = await Tags.findAll()
     .catch(err => console.error(err));
     displayMenu('post '+message, interaction, "Select which tags you wanna post to!", tags);
@@ -245,17 +249,17 @@ async function selectMenu_post(client_obj, interaction) {
     let authorTag = interaction.user.tag;
     let userIdVar = interaction.user.id;
     await interaction.deferUpdate().catch(console.error);
-    //Get all tag names of chosen tags
+    // Get all tag names of chosen tags
     let tagNameArr = await getTagNames(interaction.values);
     message = interaction.customId.substring(5);
     console.log(authorTag+' posted '+message);
-    //Delete message components                                    
+    // Delete message components                                    
     await interaction.editReply({content: 'you posted \''+message+'\' to tag: '+ tagNameArr, embeds: [], components: []})
         .then((message) => interaction.values)
         .catch(console.error);
     
     if(interaction.values){
-        //ddintereation.values == arr of tagID the user selected                               
+        // ddintereation.values == arr of tagID the user selected                               
         // Store post and tags to database
         let pId = await Posts.create({messageContent: message, userId: userIdVar})
         .catch(err => { console.error('Invalid user id or tag id') });
@@ -286,48 +290,8 @@ async function selectMenu_post(client_obj, interaction) {
 
 // helper functions
 
-// DMs all subscribed users of the tags in selectTagArr
-// TODO: NO MORE CLIENT_OBJ, USE INTERATION.user.id
-async function sendSubscribedPosts(client_obj, selectTagArr){
-    for(let tag of selectTagArr){
-        let subbedTags = await Subscriptions.findAll({ where: { tagId: tag } })
-        .catch(err => console.error(err));
-
-        let subbedPost = await PostTags.findAll({ where: { tagId: tag } })
-        .catch(err => console.error(err));
-
-        // Send Direct message all subscribed users with all posts associated with tag
-        // Get the subbedTags' userIds and subbedPost's postId
-        // let postArr = subbedPost.map(sP => sP.postId);
-
-        for(let u of subbedTags){
-            let user = await client_obj.users.fetch(u.userId)
-            .catch(err => console.error(err));
-
-            for(let sP of subbedPost){
-                // console.log(sP.tagName, sP.postId, sP.createdAt);
-                let posts = await Posts.findAll({ where: { id: sP.postId } })
-                .catch(err => console.error(err));
-                
-                await posts.forEach(p => {
-                    user.send(p.messageContent);
-
-                })
-                //Destroy sent posts from database
-                // await Posts.destroy({ where: { id: sP.postId } })
-                // .catch(err => console.error(err));
-            }
-        }
-    }
-}
-
-
+// Reply to the user with a dropdown menu that lists the items of arrayToDisplay
 function displayMenu(ID ,interaction, description, arrayToDisplay) {
-    //TODO: will import a list of tagas from database
-    //just a demo tags list for now
-    // let demoTagsArr = ['cse101','cse130','cse140'];
-    //tagsTOJSON() returns a list of options objects, we can just .addOptions(tagsToJSON())later
-
     function compare(x, y){
         if(x.tagName < y.tagName){
             return -1;
@@ -347,7 +311,7 @@ function displayMenu(ID ,interaction, description, arrayToDisplay) {
         return optionsJSONArray;
     }
 
-    //Create a tag dropdown menu
+    // Create a tag dropdown menu
     function createDropDown(placeholder,tagsJSON){
         return new MessageActionRow().addComponents(
             new MessageSelectMenu()
@@ -358,8 +322,7 @@ function displayMenu(ID ,interaction, description, arrayToDisplay) {
                 .addOptions(tagsJSON)
         )
     }
-    //Have the bot send a channel message with the user profile and select menu
-    // Made this reply ephemeral to not spam the chat
+    // Have the bot send a channel message with the user profile and select menu
     interaction.reply({content: description, components: [createDropDown("Select Tag",arrayToJSON())], ephemeral: true})
 
         .then(() => console.log(`Replied to message ${interaction.commandName}`))
@@ -368,8 +331,22 @@ function displayMenu(ID ,interaction, description, arrayToDisplay) {
     const wait = require('util').promisify(setTimeout);
 }
 
+// Check if initial tags were added to the database
+// Returns true if there are no tags found; Returns false if there are tags in the database
+async function checkInitialTagsInDatabase(){
+    const noTags = true;
+    Tags.findAndCountAll()
+    .then((result)=> {
+        if(result.count !== 0){
+           noTags = false;
+        }
+    })
+    .catch(console.error);
+    return noTags;
+}
 
-
+// Checks if user is registered
+// Returns false if user is not registered; Returns true if user is registered
 async function isUserRegistered(userId) {
     const user = await Users.findOne({
         where: {
@@ -377,11 +354,10 @@ async function isUserRegistered(userId) {
             }
         })
         .catch(false);
-    // return false if user[] is empty, otherwise, this user is registered
-    // return user.length!==0;
     return user!=null;
 }
 
+// Retrieves and returns a registered user from the database
 async function getRegisteredUser(userId) {
     const user = await Users.findOne({
         where: {
@@ -392,6 +368,7 @@ async function getRegisteredUser(userId) {
     return user;
 }
 
+// Retrieves and returns all of a user's subscribed tags
 async function getSubscribedTags(userId) {
     const user = await getRegisteredUser(userId);
     const tags = [];
@@ -406,6 +383,7 @@ async function getSubscribedTags(userId) {
     return tags;
 }
 
+// Retrieves and returns all of a user's subscribed tags' user IDS
 async function getSubscribedTagIds(userId) {
     const user = await getRegisteredUser(userId);
     const tagIds = new Set();
@@ -419,6 +397,7 @@ async function getSubscribedTagIds(userId) {
     return tagIds;
 }
 
+// Returns and returns an array of all of a user's unsubscribed tags
 async function getUnsubscribedTags(userId) {
     const subIds = await getSubscribedTagIds(userId);
     const unsubs = [];
@@ -431,42 +410,14 @@ async function getUnsubscribedTags(userId) {
     return unsubs;
 }
 
+// Retrieves and returns the complete array of available tags from database
 async function getAllTags() {
     const tags = await Tags.findAll()
         .catch(err=>console.log(err+'Error occur when trying the fetch all tags from DB'));
     return tags;
 }
 
-// async function getTagsWithIds(tagIds) {
-//     const tag = await Tags.findOne({
-//         attributes: ['tagName'],
-//         where: { id: tagId }
-//         })
-//         .catch(err=>{
-//             console.log('error occurs when searching this tag id: '+tagId)
-//         });
-//     if(tag && tag.tagName){
-//         return tag.tagName;
-//     }else{
-//         return 'tagName of '+tagId+' is undefined';
-//     }
-// }
-
-async function getOneTagName(tagId) {
-    const tag = await Tags.findOne({
-        attributes: ['tagName'],
-        where: { id: tagId }
-        })
-        .catch(err=>{
-            console.log('error occurs when searching this tag id: '+tagId)
-        });
-    if(tag && tag.tagName){
-        return tag.tagName;
-    }else{
-        return 'tagName of '+tagId+' is undefined';
-    }
-}
-
+// Retrieve and returns one tag with the given tag ID
 async function getOneTag(tagId) {
     const tag = await Tags.findOne({
         where: { id: tagId }
@@ -481,18 +432,20 @@ async function getOneTag(tagId) {
     }
 }
 
-// Get tag names from the Tags table using a constraint
-async function getTagNames(constraint){
-    //Get all tag names of chosen tags
+// Retrieve and return all tag names of the tags in tagsArray
+async function getTagNames(tagsArray){
+    // Get all tag names of chosen tags
     const nameTags = await Tags.findAll({
-        where: { id: constraint }
+        where: { id: tagsArray }
     })
     .catch(err => console.error(err));
     return nameTags.map(nT => nT.tagName);
 }
 
+// Retrieve all subscribed users of the tags in tagsArray
+// Returns an array of users with their user IDS
 async function getSubscribedUsers(tagsArray){
-    //Get all tag names of chosen tags
+    // Get all tag names of chosen tags
     const userSet = new Set();
     const users = await Subscriptions.findAll({
         attributes: ['userId'],
@@ -505,9 +458,10 @@ async function getSubscribedUsers(tagsArray){
     return Array.from(userSet);
 }
 
-// get the users who subscribed to the tags and specificly which tags they subscribed
+// Retrieve all users who subscribed to the tags in tagsArray and specifically which tags they subscribed
+// Returns a dictionary of tags mapped to users
 async function getSubscribedUsersAndTags(tagsArray){
-    //Get all tag names of chosen tags
+    // Get all tag names of chosen tags
     const userMap = {};
     const users = await Subscriptions.findAll({
         attributes: ['userId','tagId'],
@@ -529,16 +483,8 @@ async function getSubscribedUsersAndTags(tagsArray){
     return userMap;
 }
 
-async function getUsername(userid){
-    const user = await Users.findOne({
-        attributes: ['userName'],
-        where: { userId: userid }
-    })
-    .catch(err => console.error(err));
-    return user.userName;
-}
 
-// take an array of user ids and return an array of usernames
+// Take an array of user ids and return an array of usernames
 async function getUsernames(userIds) {
     const users = await Users.findAll({
         attributes: ['userName'],
@@ -548,12 +494,7 @@ async function getUsernames(userIds) {
     return users.map(user=>user.userName);
 }
 
-// async function sendDMToUser(client_obj, userId, message) {
-//     const user = client_obj.users.cache.get(userId);
-//     console.log(user+'user');
-//     await user.send(message);
-// }
-
+// Sends a direct message to all subscribed users specified in userIDArray
 async function sendDMToUsers(client_obj, userIDArray, usersTags, message, authorTag) {
     // console.log(userIDArray.map(async id=>await getUsername(id)));
     console.log(await getUsernames(userIDArray));
