@@ -125,15 +125,15 @@ discord.com/api/oauth2/authorize?client_id=<YOUR CLIENT ID>&scope=bot
 
 13. Open up the command prompt, navigate to the discordbulletinbot folder using ‘cd’ and type in npm install to install the dependencies for the bot.
 
-14. Type in npm run dbinit
+14. Type in ```npm run dbinit```
   - This will create the sqlite database
 
 15. The database will need to have tags for the bot to function
 
 16. Place a .csv file inside the directory of the bot or modify the given .csv file
 
-17. Type in npm run tags <fileName.csv>
+17. Type in ```npm run tags <fileName.csv>```
   - This will populate the database with tags and allowing the program to function
-18. Type in npm run start to run the bot!
+18. Type in ```npm run start``` to run the bot!
 
 **If you want to add the same bot to another server, follow the steps 8-18 again.**
