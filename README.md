@@ -59,4 +59,15 @@ Use the token as the password and do not share.
 $cd discordbulletinbot/
 ```
 
+## Set up Node.js
+Follow the instructions in this link [to set up Node.js on an Amazon EC2 instance](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-up-node-on-ec2-instance.html)
+
+Then, type:
+```
+$npm install
+```
+
+
+
+
 
