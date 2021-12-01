@@ -93,11 +93,11 @@ The application provides keys such as the **CLIENT ID** and the **Bot Token**, w
 
 6. Now Navigate to the bot tab on the left and click on **Add Bot** and then click **Yes do it!**
 
-<kbd><img style="float: right;" width="700" src="assets/add-bot.png" alt="add-bot" /></kbd>
+<kbd><img style="float: right;" width="750" src="assets/add-bot.png" alt="add-bot" /></kbd>
 
 7. Now you will see a newly created bot along with its settings, the only thing we’re interested in is the **BOT TOKEN**, simply click copy under the token header and it will be copied onto your clipboard, copy it straight into the **‘DISCORDJS_BOT_TOKEN=’** field
 
-<kbd><img style="float: right;" width="700" src="assets/copy-bot-token.png" alt="copy-bot-token" /></kbd>
+<kbd><img style="float: right;" width="750" src="assets/copy-bot-token.png" alt="copy-bot-token" /></kbd>
 
 
 <kbd><img style="float: right;" width="600" src="assets/modify-env-2.png" alt="modify-env-2" /></kbd>
@@ -106,23 +106,34 @@ The application provides keys such as the **CLIENT ID** and the **Bot Token**, w
 ```
 discord.com/api/oauth2/authorize?client_id=<YOUR CLIENT ID>&scope=bot
 ```
-- In this case it would look like
-  - discord.com/api/oauth2/authorize?client_id=915395913063751712&scope=bot
 
-9. 3751712&scope=bot
-Now your bot is in the discord server of your choosing! Go to the **OAuth section and click on URL Generator Tab**, then choose the settings below and copy the URL to a browser, this will give the bot permissions to do stuff!
+9. Now your bot is in the discord server of your choosing! Go to the **OAuth section and click on URL Generator Tab**, then choose the settings below and copy the URL to a browser, this will give the bot permissions to do stuff!
 
-<kbd><img style="float: right;" width="600" src="assets/allow-bot-command.png" alt="allow-bot-command" /></kbd>
+<kbd><img style="float: right;" width="750" src="assets/allow-bot-command.png" alt="allow-bot-command" /></kbd>
 
 10. The Bot should appear on the right sidebar on the **discord server** where the user lists are available. 
 
 11. Now go to your discord user profile on the browser or, go into the **Advanced Tab** and toggle **Developer Mode**
 
-<kbd><img style="float: right;" width="600" src="assets/toggle-developer-mode.png" alt="toggle-developer-mode" /></kbd>
+<kbd><img style="float: right;" width="450" src="assets/toggle-developer-mode.png" alt="toggle-developer-mode" /></kbd>
 
 12. Now click on **Copy ID** on your server icon, this copies the guild id, which is used to register the slash commands of our bot! Place it in the .env file
 
-<kbd><img style="float: right;" width="600" src="assets/copy-guild-id.png" alt="copy-guild-id" /></kbd>
+<kbd><img style="float: right;" width="250" src="assets/copy-guild-id.png" alt="copy-guild-id" /></kbd>
 
-<kbd><img style="float: right;" width="600" src="assets/modify-env-3.png" alt="modify-env-3" /></kbd>
+<kbd><img style="float: right;" width="500" src="assets/modify-env-3.png" alt="modify-env-3" /></kbd>
 
+13. Open up the command prompt, navigate to the discordbulletinbot folder using ‘cd’ and type in npm install to install the dependencies for the bot.
+
+14. Type in npm run dbinit
+  - This will create the sqlite database
+
+15. The database will need to have tags for the bot to function
+
+16. Place a .csv file inside the directory of the bot or modify the given .csv file
+
+17. Type in npm run tags <fileName.csv>
+  - This will populate the database with tags and allowing the program to function
+18. Type in npm run start to run the bot!
+
+**If you want to add the same bot to another server, follow the steps 8-18 again.**
