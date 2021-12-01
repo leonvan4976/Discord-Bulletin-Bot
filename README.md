@@ -50,23 +50,24 @@ git clone "url you just copied"
 git clone https://github.com/zkm1/discordbulletinbot.git
 ```
 
-https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token 
-**Password Auth will be disabled this is how you clone. This token will be repo privileges.**
+<details>
+  <summary><b>Optional: Create a personal access token</b></summary>
+   <p>https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+      <kbd><img style="float: right;" width="600" src="assets/personal-token.png" alt="personal-token"></kbd>
+      <br>Use the token as the password and do not share.
+  </p>
+</details>
 
-<kbd><img style="float: right;" width="600" src="assets/personal-token.png" alt="personal-token" /></kbd>
-
-**Use the token as the password and do not share.**
+**Change to the repository's directory on your computer**
 ```
 $cd discordbulletinbot/
 ```
 
 ## Set up Node.js
 Follow the instructions in this link [to set up Node.js on an Amazon EC2 instance.](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-up-node-on-ec2-instance.html)
+This allows you to install npm on the server
 
-Then, type:
-```
-$npm install
-```
+Then, type:```$npm install``` to download all the packages from package.json
 
 ## Create a Discord bot application
 1. Create your bot application on the [Discord Developer Portal.](https://discord.com/developers/applications) <br>
@@ -109,7 +110,7 @@ discord.com/api/oauth2/authorize?client_id=<YOUR CLIENT ID>&scope=bot
 
 9. Now your bot is in the discord server of your choosing! Go to the **OAuth section and click on URL Generator Tab**, then choose the settings below and copy the URL to a browser, this will give the bot permissions to do stuff!
 
-<kbd><img style="float: right;" width="750" src="assets/allow-bot-command.png" alt="allow-bot-command" /></kbd>
+<kbd><img style="float: right;" width="800" src="assets/allow-bot-command.png" alt="allow-bot-command" /></kbd>
 
 10. The Bot should appear on the right sidebar on the **discord server** where the user lists are available. 
 
@@ -123,17 +124,15 @@ discord.com/api/oauth2/authorize?client_id=<YOUR CLIENT ID>&scope=bot
 
 <kbd><img style="float: right;" width="500" src="assets/modify-env-3.png" alt="modify-env-3" /></kbd>
 
-13. Open up the command prompt, navigate to the discordbulletinbot folder using ‘cd’ and type in npm install to install the dependencies for the bot.
-
-14. Type in ```npm run dbinit```
+13. Type in ```npm run dbinit```
   - This will create the sqlite database
 
-15. The database will need to have tags for the bot to function
+14. The database will need to have tags for the bot to function
 
-16. Place a .csv file inside the directory of the bot or modify the given .csv file
+15. Place a .csv file inside the directory of the bot or modify the given .csv file
 
-17. Type in ```npm run tags <fileName.csv>```
+16. Type in ```npm run tags <fileName.csv>```
   - This will populate the database with tags and allowing the program to function
-18. Type in ```npm run start``` to run the bot!
+17. Type in ```npm run start``` to run the bot!
 
 **If you want to add the same bot to another server, follow the steps 8-18 again.**
