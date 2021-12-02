@@ -509,7 +509,8 @@ async function sendDMToUsers(client_obj, userIDArray, usersTags, message, author
             // .addFields(tags_list)
         if(user!==undefined)
             // interaction.reply({embeds: [ProfileEmbed], components: [], ephemeral: true});
-            await user.send({embeds: [ProfileEmbed], components: [], ephemeral: true});
+            await user.send({embeds: [ProfileEmbed], components: [], ephemeral: true})
+            .catch(err => console.error(err));
             // await user.send(message)
     })
 }
